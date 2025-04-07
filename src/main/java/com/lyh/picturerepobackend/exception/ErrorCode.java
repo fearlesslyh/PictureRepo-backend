@@ -1,10 +1,14 @@
 package com.lyh.picturerepobackend.exception;
 
+import lombok.Getter;
+
 /**
  * 自定义错误码
- *
 
+ * 自定义错误码时，建议跟主流的错误码（比如 HTTP 错误码）的含义保持一致，比如 “未登录” 定义为 40100，和 HTTP 401 错误（用户需要进行身份认证）保持一致，会更容易理解。
+ * 错误码不要完全连续，预留一些间隔，便于后续扩展。
  */
+@Getter
 public enum ErrorCode {
 
     SUCCESS(0, "ok"),
@@ -29,14 +33,6 @@ public enum ErrorCode {
     ErrorCode(int code, String message) {
         this.code = code;
         this.message = message;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
     }
 
 }

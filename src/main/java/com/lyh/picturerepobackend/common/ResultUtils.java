@@ -4,7 +4,7 @@ import com.lyh.picturerepobackend.exception.ErrorCode;
 
 /**
  * 返回工具类
- *
+ * 为了更方便地根据情况抛出异常，可以封装一个 ThrowUtils，类似断言类，简化抛异常的代码
  */
 public class ResultUtils {
 
