@@ -1,6 +1,5 @@
 package com.lyh.picturerepobackend.common;
 
-import com.yupi.springbootinit.constant.CommonConstant;
 import lombok.Data;
 
 /**
@@ -28,5 +27,5 @@ public class PageRequest {
     /**
      * 排序顺序（默认升序）
      */
-    private String sortOrder = CommonConstant.SORT_ORDER_ASC;
+    private String sortOrder = "descend";
 }
