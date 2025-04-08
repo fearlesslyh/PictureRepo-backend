@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
  * 全局异常处理器
- *
+ * 为了防止意料之外的异常，利用 AOP 切面全局对业务异常和 RuntimeException 进行捕获：
  */
 @RestControllerAdvice
 @Slf4j
