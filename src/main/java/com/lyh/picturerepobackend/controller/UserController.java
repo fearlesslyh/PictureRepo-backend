@@ -8,6 +8,7 @@ import com.lyh.picturerepobackend.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 
@@ -18,6 +19,7 @@ import static com.lyh.picturerepobackend.exception.ErrorCode.PARAMS_ERROR;
  * @version 1.0
  * @date 2025/4/9 20:47
  */
+@RestController
 @RequestMapping("/user")
 public class UserController {
     @Resource

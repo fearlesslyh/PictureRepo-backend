@@ -66,10 +66,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUserName(userAccount);
         // 设置用户角色
         user.setUserRole(UserRoleEnum.USER.getValue());
-        // 设置创建时间
-        user.setCreateTime(Date.valueOf(LocalDate.now()));
-        // 设置更新时间
-        user.setUpdateTime(Date.valueOf(LocalDate.now()));
         // 保存用户信息
         boolean saveUser = this.save(user);
         // 如果保存失败，则抛出异常
