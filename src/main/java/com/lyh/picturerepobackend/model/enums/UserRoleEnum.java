@@ -1,12 +1,14 @@
 package com.lyh.picturerepobackend.model.enums;
 
 import cn.hutool.core.util.ObjUtil;
+import lombok.Getter;
 
 /**
  * @author <a href=https://github.com/fearlesslyh> 梁懿豪 </a>
  * @version 1.0
  * @date 2025/4/9 17:33
  */
+@Getter
 public enum UserRoleEnum {
     USER("用户", "user"),
     ADMIN("管理员", "admin");
@@ -19,7 +21,7 @@ public enum UserRoleEnum {
     }
 
     /**
-     * 根据value 获得枚举
+     * 根据value 获得枚举。
      *
      * @Param value
      * @Return
