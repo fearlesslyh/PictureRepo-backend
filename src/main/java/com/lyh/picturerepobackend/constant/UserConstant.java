@@ -6,6 +6,7 @@ package com.lyh.picturerepobackend.constant;
  * @date 2025/4/9 22:19
  */
 public interface UserConstant {
+    //用户的登录态
     String USER_LOGIN_STATE = "user_login";
 
     //  region 权限

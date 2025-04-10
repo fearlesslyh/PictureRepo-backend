@@ -5,12 +5,10 @@ import com.lyh.picturerepobackend.common.ResultUtils;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
 import com.lyh.picturerepobackend.model.dto.user.UserLogin;
 import com.lyh.picturerepobackend.model.dto.user.UserRegister;
+import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.vo.LoginUserVO;
 import com.lyh.picturerepobackend.service.UserService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +45,13 @@ public class UserController {
         // 返回注册成功的消息
         return ResultUtils.success(result);
     }
+
+    /**
+     * 用户登录
+     * @param userLogin
+     * @param request
+     * @return
+     */
     @PostMapping("/login")
     public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLogin userLogin, HttpServletRequest request) {
         ThrowUtils.throwIf( userLogin == null, PARAMS_ERROR, "用户登录信息不能为空");
@@ -54,5 +59,24 @@ public class UserController {
         String userPassword = userLogin.getUserPassword();
         LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
         return ResultUtils.success(loginUserVO);
+    }
+
+    /**
+     * 获取当前登录用户信息
+     * @param request
+     * @return
+     */
+    @GetMapping("/get/loginUser")
+    public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        LoginUserVO loginUserVO = userService.getLoginUserVO(loginUser);
+        return ResultUtils.success(loginUserVO);
+    }
+
+    @PostMapping("/logout")
+    public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
+        ThrowUtils.throwIf(request == null, PARAMS_ERROR, "用户登录信息不能为空");
+        boolean result = userService.userLogout(request);
+        return ResultUtils.success(result);
     }
 }

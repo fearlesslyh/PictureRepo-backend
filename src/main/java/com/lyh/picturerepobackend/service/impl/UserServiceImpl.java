@@ -16,8 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.lyh.picturerepobackend.constant.UserConstant.USER_LOGIN_STATE;
-import static com.lyh.picturerepobackend.exception.ErrorCode.PARAMS_ERROR;
-import static com.lyh.picturerepobackend.exception.ErrorCode.SYSTEM_ERROR;
+import static com.lyh.picturerepobackend.exception.ErrorCode.*;
 
 /**
  * @author RAOYAO
@@ -111,8 +110,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 把登录的用户信息包装后再返回，User类要转换成Vo
-     * @param user
-     * @return
+     * @param user 用户信息
+     * @return 包装好的用户VO
      */
     @Override
     public LoginUserVO getLoginUserVO(User user) {
@@ -122,6 +121,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         LoginUserVO loginUserVO = new LoginUserVO();
         BeanUtil.copyProperties(user, loginUserVO);
         return loginUserVO;
+    }
+
+    /**
+     * 获取当前登录用户信息
+     * @param request 请求
+     * @return 返回用户信息
+     */
+    @Override
+    public User getLoginUser(HttpServletRequest request) {
+        // 先判断是否登录
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User user = (User) userObj;
+        if (user == null|| user.getId() == null) {
+            throw new BusinessException(NOT_LOGIN_ERROR, "用户未登录");
+        }
+        // 返回用户信息
+        Long userId = user.getId();
+        user= this.getById(userId);
+        if (user == null) {
+            throw new BusinessException(NOT_LOGIN_ERROR, "用户不存在");
+        }
+        return user;
+    }
+
+    @Override
+    public boolean userLogout(HttpServletRequest request) {
+        // 先判断是否登录
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User user = (User) userObj;
+        if (user == null|| user.getId() == null) {
+            throw new BusinessException(OPERATION_ERROR, "用户未登录");
+        }
+        //移除登录态
+        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        return true;
     }
 
 }
