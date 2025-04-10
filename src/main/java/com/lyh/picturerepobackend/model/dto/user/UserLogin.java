@@ -1,5 +1,7 @@
 package com.lyh.picturerepobackend.model.dto.user;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -7,6 +9,7 @@ import java.io.Serializable;
  * @version 1.0
  * @date 2025/4/9 22:05
  */
+@Data
 public class UserLogin implements Serializable {
     private static final long serialVersionUID = 1L;
     /**

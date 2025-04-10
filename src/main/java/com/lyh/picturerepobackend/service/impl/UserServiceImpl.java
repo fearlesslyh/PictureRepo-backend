@@ -1,18 +1,21 @@
 package com.lyh.picturerepobackend.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.picturerepobackend.exception.BusinessException;
+import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.UserRoleEnum;
+import com.lyh.picturerepobackend.model.vo.LoginUserVO;
 import com.lyh.picturerepobackend.service.UserService;
 import com.lyh.picturerepobackend.mapper.UserMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
-import java.time.LocalDate;
+import javax.servlet.http.HttpServletRequest;
 
+import static com.lyh.picturerepobackend.constant.UserConstant.USER_LOGIN_STATE;
 import static com.lyh.picturerepobackend.exception.ErrorCode.PARAMS_ERROR;
 import static com.lyh.picturerepobackend.exception.ErrorCode.SYSTEM_ERROR;
 
@@ -47,9 +50,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         //2.检查账号是否重复
         // 根据用户账号查询用户信息
-        User currentuser = this.lambdaQuery().eq(User::getUserAccount, userAccount).one();
+        User currentUser = this.lambdaQuery().eq(User::getUserAccount, userAccount).one();
         // 如果用户信息不为空，则抛出异常
-        if (currentuser != null) {
+        if (currentUser != null) {
             throw new BusinessException(PARAMS_ERROR, "用户账号已存在");
         }
         //3.加密密码
@@ -74,6 +77,51 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // 返回用户id
         return user.getId();
+    }
+
+    @Override
+    public LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
+        // 1. 校验
+        if (StrUtil.hasBlank(userAccount, userPassword)) {
+            throw new BusinessException(PARAMS_ERROR, "用户账号、密码不能为空");
+        }
+        if (userAccount.length() < 4) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号错误");
+        }
+        if (userPassword.length() < 8) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
+        }
+        //2.加密
+        // 根据用户账号查询用户信息
+        User user = this.lambdaQuery().eq(User::getUserAccount, userAccount).one();
+        // 如果用户信息为空，则抛出异常
+        if (user == null) {
+            throw new BusinessException(PARAMS_ERROR, " 用户不存在");
+        }
+        // 如果密码不正确，则抛出异常
+        if (!PasswordEncoder.matches(userPassword, user.getUserPassword())) {
+            throw new BusinessException(PARAMS_ERROR, "密码错误");
+        }
+
+        //3.记录用户的登录态
+        request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        //4.返回用户信息
+        return this.getLoginUserVO(user);
+    }
+
+    /**
+     * 把登录的用户信息包装后再返回，User类要转换成Vo
+     * @param user
+     * @return
+     */
+    @Override
+    public LoginUserVO getLoginUserVO(User user) {
+        if (user == null) {
+            return null;
+        }
+        LoginUserVO loginUserVO = new LoginUserVO();
+        BeanUtil.copyProperties(user, loginUserVO);
+        return loginUserVO;
     }
 
 }

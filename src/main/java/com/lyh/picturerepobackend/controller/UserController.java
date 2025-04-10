@@ -3,7 +3,9 @@ package com.lyh.picturerepobackend.controller;
 import com.lyh.picturerepobackend.common.BaseResponse;
 import com.lyh.picturerepobackend.common.ResultUtils;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
+import com.lyh.picturerepobackend.model.dto.user.UserLogin;
 import com.lyh.picturerepobackend.model.dto.user.UserRegister;
+import com.lyh.picturerepobackend.model.vo.LoginUserVO;
 import com.lyh.picturerepobackend.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import static com.lyh.picturerepobackend.exception.ErrorCode.PARAMS_ERROR;
 
@@ -43,5 +46,13 @@ public class UserController {
 
         // 返回注册成功的消息
         return ResultUtils.success(result);
+    }
+    @PostMapping("/login")
+    public BaseResponse<LoginUserVO> userLogin(@RequestBody UserLogin userLogin, HttpServletRequest request) {
+        ThrowUtils.throwIf( userLogin == null, PARAMS_ERROR, "用户登录信息不能为空");
+        String userAccount = userLogin.getUserAccount();
+        String userPassword = userLogin.getUserPassword();
+        LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
+        return ResultUtils.success(loginUserVO);
     }
 }
