@@ -1,19 +1,27 @@
 package com.lyh.picturerepobackend.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.picturerepobackend.exception.BusinessException;
 import com.lyh.picturerepobackend.exception.ErrorCode;
+import com.lyh.picturerepobackend.model.dto.user.UserQuery;
 import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.UserRoleEnum;
 import com.lyh.picturerepobackend.model.vo.LoginUserVO;
+import com.lyh.picturerepobackend.model.vo.UserVO;
 import com.lyh.picturerepobackend.service.UserService;
 import com.lyh.picturerepobackend.mapper.UserMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.lyh.picturerepobackend.constant.UserConstant.USER_LOGIN_STATE;
 import static com.lyh.picturerepobackend.exception.ErrorCode.*;
@@ -153,9 +161,55 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user == null|| user.getId() == null) {
             throw new BusinessException(OPERATION_ERROR, "用户未登录");
         }
-        //移除登录态
+        // 移除登录态
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return true;
+    }
+
+    @Override
+    public UserVO getUserVO(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserVO userVO = new UserVO();
+        BeanUtil.copyProperties(user, userVO);
+        return userVO;
+    }
+
+    @Override
+    public List<UserVO> getUserVOList(List<User> userList) {
+        if (CollectionUtil.isEmpty(userList)) {
+            return null;
+        }
+        // this 指的是调用 getUserVOList 方法的 类的实例对象。
+        // 它用来引用当前对象的方法
+        return userList.stream()
+                .map(this::getUserVO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public QueryWrapper<User> getQueryWrapper(UserQuery userQuery) {
+        if(userQuery == null) {
+            throw new BusinessException(PARAMS_ERROR, "查询条件不能为空");
+        }
+        Long id = userQuery.getId();
+        String userName = userQuery.getUserName();
+        String userAccount = userQuery.getUserAccount();
+        String userProfile = userQuery.getUserProfile();
+        String userRole = userQuery.getUserRole();
+        int current = userQuery.getCurrent();
+        int pageSize = userQuery.getPageSize();
+        String sortField = userQuery.getSortField();
+        String sortOrder = userQuery.getSortOrder();
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq(ObjUtil.isNotNull(id), "id", id);
+        queryWrapper.eq(StrUtil.isNotBlank(userRole), "userRole", userRole);
+        queryWrapper.like(StrUtil.isNotBlank(userName), "userName", userName);
+        queryWrapper.like(StrUtil.isNotBlank(userAccount), "userAccount", userAccount);
+        queryWrapper.like(StrUtil.isNotBlank(userProfile), "userProfile", userProfile);
+        queryWrapper.orderBy(StrUtil.isNotBlank(sortField), sortOrder.equals("ascend"), sortField);
+        return queryWrapper;
     }
 
 }

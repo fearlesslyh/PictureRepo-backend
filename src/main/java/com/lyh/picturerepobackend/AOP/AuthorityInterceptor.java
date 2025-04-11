@@ -2,7 +2,6 @@ package com.lyh.picturerepobackend.AOP;
 
 import com.lyh.picturerepobackend.annotation.AuthorityCheck;
 import com.lyh.picturerepobackend.exception.BusinessException;
-import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.service.UserService;
 import com.lyh.picturerepobackend.model.enums.UserRoleEnum;
@@ -15,6 +14,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import javax.annotation.Resource;
+
+import static com.lyh.picturerepobackend.exception.ErrorCode.*;
 
 /**
  * 权限拦截器
@@ -42,11 +43,11 @@ public class AuthorityInterceptor {
     public Object doInterceptor(ProceedingJoinPoint joinPoint, AuthorityCheck authorityCheck) throws Throwable {
 
         // 1. 获取权限要求
-        String mustRole = authorityCheck.mustHaveRole();
-        UserRoleEnum mustRoleEnum = UserRoleEnum.getEnumByValue(mustRole);
+        String mustHaveRole = authorityCheck.mustHaveRole();
+        UserRoleEnum mustHaveRoleEnum = UserRoleEnum.getEnumByValue(mustHaveRole);
 
         // 2. 无需权限，直接放行
-        if (mustRoleEnum == null) {
+        if (mustHaveRoleEnum == null) {
             return joinPoint.proceed();
         }
 
@@ -54,13 +55,13 @@ public class AuthorityInterceptor {
         HttpServletRequest request = getRequest();
         User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR); // 用户未登录
+            throw new BusinessException(NOT_LOGIN_ERROR); // 用户未登录
         }
 
         // 4. 校验用户权限
         UserRoleEnum userRoleEnum = UserRoleEnum.getEnumByValue(loginUser.getUserRole());
-        if (!hasPermission(userRoleEnum, mustRoleEnum)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR); // 权限不足
+        if (!hasPermission(userRoleEnum, mustHaveRoleEnum)) {
+            throw new BusinessException(NO_AUTH_ERROR); // 权限不足
         }
 
         // 5. 权限校验通过，放行
@@ -94,11 +95,11 @@ public class AuthorityInterceptor {
     private HttpServletRequest getRequest() {
         RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
         if (requestAttributes == null) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "RequestAttributes is null");
+            throw new BusinessException(SYSTEM_ERROR, "RequestAttributes is null");
         }
         HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
         if (request == null) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "HttpServletRequest is null");
+            throw new BusinessException(SYSTEM_ERROR, "HttpServletRequest is null");
         }
         return request;
     }
