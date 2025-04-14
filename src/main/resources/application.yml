@@ -2,7 +2,7 @@ server:
   port: 8080  # 您的应用程序将在此端口上运行
   address: 0.0.0.0
   servlet:
-   context-path: /api
+    context-path: /api
 
 spring:
   datasource:
@@ -11,8 +11,12 @@ spring:
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver  # MySQL的JDBC驱动类名
   autoconfigure:
-      exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+  profiles:
+    active: local # 默认激活 local profile，或者你可以在启动命令中指定
+  servlet:
+    multipart:
+      max-file-size: 10MB  # 设置上传文件的最大大小
 
 logging:
   level:
@@ -39,4 +43,3 @@ knife4j:
         group-name: 梁懿豪
         api-rule: package
         api-rule-resources: com.lyh.picturerepobackend.controller
-
