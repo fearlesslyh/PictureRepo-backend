@@ -94,6 +94,11 @@ public class PictureVO implements Serializable {
      */
     private Date updateTime;
 
+    /**
+     * 创建用户信息
+     */
+    private UserVO user;
+
     private static final long serialVersionUID = 1L;
 
     public static PictureVO objToVo(Picture picture) {
@@ -115,4 +120,5 @@ public class PictureVO implements Serializable {
         picture.setTags(JSONUtil.toJsonStr(pictureVO.getTags()));
         return picture;
     }
+
 }

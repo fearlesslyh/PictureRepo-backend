@@ -1,6 +1,7 @@
 package com.lyh.picturerepobackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lyh.picturerepobackend.model.dto.picture.PictureQuery;
 import com.lyh.picturerepobackend.model.dto.picture.PictureUpload;
 import com.lyh.picturerepobackend.model.entity.Picture;
@@ -26,4 +27,10 @@ public interface PictureService extends IService<Picture> {
     PictureVO uploadPicture(MultipartFile multipartFile, PictureUpload pictureUploadRequest, User loginUser);
 
     QueryWrapper<Picture> getQueryWrapper(PictureQuery pictureQueryRequest);
+
+    PictureVO getPictureVO(Picture picture);
+
+    Page<PictureVO> getPictureVOPage(Page<Picture> picturePage);
+
+    void validPicture(Picture picture);
 }
