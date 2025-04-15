@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -177,7 +178,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     }
 
     @Override
-    public PictureVO getPictureVO(Picture picture) {
+    public PictureVO getPictureVO(Picture picture, HttpServletRequest request) {
         if (picture == null) {
             return null;
         }
@@ -193,7 +194,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     }
 
     @Override
-    public Page<PictureVO> getPictureVOPage(Page<Picture> picturePage) {
+    public Page<PictureVO> getPictureVOPage(Page<Picture> picturePage, HttpServletRequest request) {
         //创建一个PictureVO的分页对象，并将picturePage的当前页、每页大小和总记录数赋值给它,后面返回这个分页对象
         Page<PictureVO> pictureVOPage = new Page<>(picturePage.getCurrent(), picturePage.getSize(), picturePage.getTotal());
         //获取picturePage中的记录列表
@@ -204,7 +205,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         }
         //将记录列表中的每个Picture对象转换为PictureVO对象，并收集到一个列表中
         List<PictureVO> pictureVOList = pictureList.stream()
-                .map(this::getPictureVO)
+                .map(PictureVO::objToVo)
                 .collect(Collectors.toList());
         //关联查询用户信息
         //这里我们做了个小优化，不是针对每条数据都查询一次用户，而是先获取到要查询的用户 id 列表，只发送一次查询用户表的请求，再将查到的值设置到图片对象中。

@@ -10,6 +10,8 @@ import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.vo.PictureVO;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author RAOYAO
  * @description 针对表【picture(图片)】的数据库操作Service
@@ -28,9 +30,9 @@ public interface PictureService extends IService<Picture> {
 
     QueryWrapper<Picture> getQueryWrapper(PictureQuery pictureQueryRequest);
 
-    PictureVO getPictureVO(Picture picture);
+    PictureVO getPictureVO(Picture picture, HttpServletRequest request);
 
-    Page<PictureVO> getPictureVOPage(Page<Picture> picturePage);
+    Page<PictureVO> getPictureVOPage(Page<Picture> picturePage, HttpServletRequest request);
 
     void validPicture(Picture picture);
 }
