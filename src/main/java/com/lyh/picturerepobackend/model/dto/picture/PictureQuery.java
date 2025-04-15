@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class PictureQuery extends PageRequest implements Serializable  {
+public class PictureQuery extends PageRequest implements Serializable {
     /**
      * id
      */

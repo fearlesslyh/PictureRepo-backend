@@ -24,5 +24,6 @@ public interface PictureService extends IService<Picture> {
      * @return
      */
     PictureVO uploadPicture(MultipartFile multipartFile, PictureUpload pictureUploadRequest, User loginUser);
+
     QueryWrapper<Picture> getQueryWrapper(PictureQuery pictureQueryRequest);
 }

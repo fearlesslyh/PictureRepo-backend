@@ -10,11 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -155,7 +153,7 @@ public class CosManager {
             List<COSObjectSummary> objectSummaries = objectListing.getObjectSummaries();
             for (COSObjectSummary objectSummary : objectSummaries) {
                 // 拼接文件URL
-                String fileUrl =  cosConfig.getHost() + "/" + objectSummary.getKey();
+                String fileUrl = cosConfig.getHost() + "/" + objectSummary.getKey();
                 fileUrls.add(fileUrl);
             }
             nextMarker = objectListing.getNextMarker();
