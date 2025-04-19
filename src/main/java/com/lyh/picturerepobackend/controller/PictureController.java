@@ -13,6 +13,7 @@ import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
 import com.lyh.picturerepobackend.model.dto.picture.PictureEdit;
 import com.lyh.picturerepobackend.model.dto.picture.PictureQuery;
+import com.lyh.picturerepobackend.model.dto.picture.PictureReview;
 import com.lyh.picturerepobackend.model.dto.picture.PictureUpdate;
 import com.lyh.picturerepobackend.model.entity.Picture;
 import com.lyh.picturerepobackend.model.entity.User;
@@ -157,6 +158,19 @@ public class PictureController {
         }
         boolean result = pictureService.updateById(picture);
         ThrowUtils.throwIf(!result, OPERATION_ERROR, "图片更新失败");
+        return ResultUtils.success(true);
+    }
+
+    @PostMapping("/review")
+    @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> reviewPicture(@RequestBody PictureReview pictureReview, HttpServletRequest request) {
+        //todo 审核接口
+        ThrowUtils.throwIf(pictureReview == null, PARAMS_ERROR, "请求错误");
+        User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(NOT_LOGIN_ERROR, "未登录");
+        }
+        pictureService.reviewPicture(pictureReview, loginUser);
         return ResultUtils.success(true);
     }
 }
