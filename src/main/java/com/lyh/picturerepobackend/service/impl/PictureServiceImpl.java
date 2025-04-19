@@ -12,14 +12,18 @@ import com.lyh.picturerepobackend.exception.ThrowUtils;
 import com.lyh.picturerepobackend.manager.FileManager; // 引入 FileManager
 import com.lyh.picturerepobackend.model.dto.file.FileUpload; // 引入 FileUpload DTO
 import com.lyh.picturerepobackend.model.dto.picture.PictureQuery;
+import com.lyh.picturerepobackend.model.dto.picture.PictureReview;
 import com.lyh.picturerepobackend.model.dto.picture.PictureUpload;
 import com.lyh.picturerepobackend.model.entity.Picture;
 import com.lyh.picturerepobackend.model.entity.User;
+import com.lyh.picturerepobackend.model.enums.PictureReviewStatus;
 import com.lyh.picturerepobackend.model.vo.PictureVO;
 import com.lyh.picturerepobackend.model.vo.UserVO;
 import com.lyh.picturerepobackend.service.PictureService;
 import com.lyh.picturerepobackend.mapper.PictureMapper;
 import com.lyh.picturerepobackend.service.UserService;
+import io.swagger.models.auth.In;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.lyh.picturerepobackend.exception.ErrorCode.OPERATION_ERROR;
 import static com.lyh.picturerepobackend.exception.ErrorCode.PARAMS_ERROR;
 
 /**
@@ -253,6 +258,28 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         }
     }
 
+    @Override
+    public void reviewPicture(PictureReview pictureReview, User loginUser) {
+        Long id = pictureReview.getId();
+        ThrowUtils.throwIf(ObjUtil.isNull(id), PARAMS_ERROR, "图片id不能为空");
+        Integer reviewStatus = pictureReview.getReviewStatus();
+        ThrowUtils.throwIf(ObjUtil.isNull(reviewStatus), PARAMS_ERROR, "审核状态不能为空");
+        PictureReviewStatus pictureReviewStatus = PictureReviewStatus.getPictureReviewStatus(reviewStatus);
+        ThrowUtils.throwIf(ObjUtil.isNull(pictureReviewStatus), PARAMS_ERROR, "审核状态错误");
+        Picture picture = this.getById(id);
+        ThrowUtils.throwIf(ObjUtil.isNull(picture), PARAMS_ERROR, "图片不存在");
+        //状态相同，无需更新
+        if (picture.getReviewStatus().equals(reviewStatus)) {
+            throw new BusinessException(PARAMS_ERROR, "审核状态相同，无需更新");
+        }
+        Picture currentPicture = new Picture();
+        BeanUtils.copyProperties(pictureReview, currentPicture);
+        currentPicture.setReviewTime(new Date());
+        currentPicture.setReviewerId(loginUser.getId());
+        boolean result = this.updateById(currentPicture);
+        ThrowUtils.throwIf(!result, OPERATION_ERROR, "审核失败");
 
+
+    }
 }
 
