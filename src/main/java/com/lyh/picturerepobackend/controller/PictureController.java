@@ -17,6 +17,7 @@ import com.lyh.picturerepobackend.model.dto.picture.PictureReview;
 import com.lyh.picturerepobackend.model.dto.picture.PictureUpdate;
 import com.lyh.picturerepobackend.model.entity.Picture;
 import com.lyh.picturerepobackend.model.entity.User;
+import com.lyh.picturerepobackend.model.enums.PictureReviewStatus;
 import com.lyh.picturerepobackend.model.vo.PictureVO;
 import com.lyh.picturerepobackend.service.PictureService;
 import com.lyh.picturerepobackend.service.UserService;
@@ -62,7 +63,7 @@ public class PictureController {
 
     @PostMapping("/update")
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> updatePicture(@RequestBody PictureUpdate pictureUpdate) {
+    public BaseResponse<Boolean> updatePicture(@RequestBody PictureUpdate pictureUpdate, HttpServletRequest request) {
         if (pictureUpdate == null || pictureUpdate.getId() < 0) {
             throw new BusinessException(PARAMS_ERROR, "请求错误");
         }
@@ -75,6 +76,10 @@ public class PictureController {
         if (serviceById == null) {
             throw new BusinessException(NOT_FOUND_ERROR, "图片不存在");
         }
+        //补充审核状态。如果是管理员则直接审核通过，如果是普通用户则审核状态为审核中
+        User loginUser = userService.getLoginUser(request);
+        pictureService.setReviewStatus(picture, loginUser);
+        //操作数据库
         boolean result = pictureService.updateById(picture);
         ThrowUtils.throwIf(!result, OPERATION_ERROR, "图片更新失败");
         return ResultUtils.success(true);
@@ -127,9 +132,12 @@ public class PictureController {
         }
         int current = pictureQuery.getCurrent();
         int size = pictureQuery.getPageSize();
+        //普通用户只能查看审核通过的图片
+        pictureQuery.setReviewStatus(PictureReviewStatus.PASS.getValue());
         ThrowUtils.throwIf(size > 20, PARAMS_ERROR, "每页数量不能超过20");
         Page<Picture> picturePage = new Page<>(current, size);
         QueryWrapper<Picture> queryWrapper = pictureService.getQueryWrapper(pictureQuery);
+        //查询数据库，picturePage是页面信息，queryWrapper是查询条件
         Page<Picture> picturePageResult = pictureService.page(picturePage, queryWrapper);
         Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePageResult, request);
         return ResultUtils.success(pictureVOPage);
@@ -156,6 +164,9 @@ public class PictureController {
         if (loginUser == null || !loginUser.getId().equals(serviceById.getUserId())) {
             throw new BusinessException(NO_AUTH_ERROR, "无权限");
         }
+        //补充审核状态。如果是管理员则直接审核通过，如果是普通用户则审核状态为审核中
+        pictureService.setReviewStatus(picture, loginUser);
+        //操作数据库
         boolean result = pictureService.updateById(picture);
         ThrowUtils.throwIf(!result, OPERATION_ERROR, "图片更新失败");
         return ResultUtils.success(true);
@@ -164,7 +175,7 @@ public class PictureController {
     @PostMapping("/review")
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> reviewPicture(@RequestBody PictureReview pictureReview, HttpServletRequest request) {
-        //todo 审核接口
+        // 审核接口
         ThrowUtils.throwIf(pictureReview == null, PARAMS_ERROR, "请求错误");
         User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {

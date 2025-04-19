@@ -212,6 +212,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return queryWrapper;
     }
 
+    /**
+     * 判断用户是否是管理员
+     * @param user 管理员
+     * @return true 是管理员，false 不是管理员
+     */
     @Override
     public boolean isAdmin(User user) {
         if (user == null) {
