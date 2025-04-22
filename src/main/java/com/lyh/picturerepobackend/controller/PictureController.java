@@ -138,7 +138,7 @@ public class PictureController {
 
     @GetMapping("/list/page")
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Page<Picture>> getPicturePage( PictureQuery pictureQuery) {
+    public BaseResponse<Page<Picture>> getPicturePage(PictureQuery pictureQuery) {
         if (pictureQuery == null) {
             throw new BusinessException(PARAMS_ERROR, "请求的参数为空");
         }
@@ -151,7 +151,7 @@ public class PictureController {
     }
 
     @GetMapping("/list/VO/page")
-    public BaseResponse<Page<PictureVO>> getPictureVOPage( PictureQuery pictureQuery, HttpServletRequest request) {
+    public BaseResponse<Page<PictureVO>> getPictureVOPage(PictureQuery pictureQuery, HttpServletRequest request) {
         if (pictureQuery == null) {
             throw new BusinessException(PARAMS_ERROR, "请求的参数为空");
         }
@@ -235,4 +235,17 @@ public class PictureController {
         }
         cosManager.downloadFile(filename, response);
     }
+
+    @PostMapping("/upload/batch")
+    @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Integer> uploadPictureByBatch(
+            @RequestBody PictureUploadByBatch pictureUploadByBatch,
+            HttpServletRequest request
+    ) {
+        ThrowUtils.throwIf(pictureUploadByBatch == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        int uploadCount = pictureService.uploadPictureByBatch(pictureUploadByBatch, loginUser);
+        return ResultUtils.success(uploadCount);
+    }
+
 }

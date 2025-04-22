@@ -3,10 +3,7 @@ package com.lyh.picturerepobackend.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.lyh.picturerepobackend.model.dto.picture.PictureEdit;
-import com.lyh.picturerepobackend.model.dto.picture.PictureQuery;
-import com.lyh.picturerepobackend.model.dto.picture.PictureReview;
-import com.lyh.picturerepobackend.model.dto.picture.PictureUpload;
+import com.lyh.picturerepobackend.model.dto.picture.*;
 import com.lyh.picturerepobackend.model.entity.Picture;
 import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.vo.PictureVO;
@@ -42,5 +39,15 @@ public interface PictureService extends IService<Picture> {
     void setReviewStatus(Picture picture, User loginUser);
 
     void editPicture(PictureEdit pictureEdit, User loginUser);
+
+    /**
+     * 批量抓取和创建图片
+     *
+     * @param pictureUploadByBatch
+     * @param loginUser
+     * @return 成功创建的图片数
+     */
+    Integer uploadPictureByBatch(PictureUploadByBatch pictureUploadByBatch, User loginUser);
+
 
 }
