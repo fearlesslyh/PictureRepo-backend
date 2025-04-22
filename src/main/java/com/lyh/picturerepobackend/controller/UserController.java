@@ -7,24 +7,18 @@ import com.lyh.picturerepobackend.common.DeleteRequest;
 import com.lyh.picturerepobackend.common.ResultUtils;
 import com.lyh.picturerepobackend.constant.UserConstant;
 import com.lyh.picturerepobackend.exception.BusinessException;
-import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
-import com.lyh.picturerepobackend.model.dto.picture.PictureUpload;
 import com.lyh.picturerepobackend.model.dto.user.*;
 import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.vo.LoginUserVO;
-import com.lyh.picturerepobackend.model.vo.PictureVO;
 import com.lyh.picturerepobackend.model.vo.UserVO;
-import com.lyh.picturerepobackend.service.PictureService;
 import com.lyh.picturerepobackend.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.List;
 
 import static com.lyh.picturerepobackend.exception.ErrorCode.*;
@@ -116,7 +110,7 @@ public class UserController {
 
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
     @GetMapping("/get")
-    public BaseResponse<User> getUserById(long id) {
+    public BaseResponse<User> getUserById(Long id) {
         ThrowUtils.throwIf(id <= 0, PARAMS_ERROR, "用户id不能为空");
         User user = userService.getById(id);
         ThrowUtils.throwIf(user == null, NOT_FOUND_ERROR, "用户不存在");
@@ -124,7 +118,7 @@ public class UserController {
     }
 
     @GetMapping("/get/voId")
-    public BaseResponse<UserVO> getUserVOById(long id) {
+    public BaseResponse<UserVO> getUserVOById(Long id) {
         ThrowUtils.throwIf(id <= 0, PARAMS_ERROR, "用户id不能为空");
         BaseResponse<User> userById = getUserById(id);
         User user = userById.getData();

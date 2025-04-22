@@ -3,8 +3,8 @@ package com.lyh.picturerepobackend.AOP;
 import com.lyh.picturerepobackend.annotation.AuthorityCheck;
 import com.lyh.picturerepobackend.exception.BusinessException;
 import com.lyh.picturerepobackend.model.entity.User;
-import com.lyh.picturerepobackend.service.UserService;
 import com.lyh.picturerepobackend.model.enums.UserRoleEnum;
+import com.lyh.picturerepobackend.service.UserService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -12,8 +12,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import javax.servlet.http.HttpServletRequest;
+
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import static com.lyh.picturerepobackend.exception.ErrorCode.*;
 

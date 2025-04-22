@@ -1,14 +1,9 @@
 package com.lyh.picturerepobackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.injector.methods.DeleteById;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.lyh.picturerepobackend.common.DeleteRequest;
-import com.lyh.picturerepobackend.model.dto.user.UserAdd;
-import com.lyh.picturerepobackend.model.dto.user.UserQuery;
-import com.lyh.picturerepobackend.model.dto.user.UserUpdate;
-import com.lyh.picturerepobackend.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lyh.picturerepobackend.model.dto.user.UserQuery;
+import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.vo.LoginUserVO;
 import com.lyh.picturerepobackend.model.vo.UserVO;
 

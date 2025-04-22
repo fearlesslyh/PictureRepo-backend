@@ -6,7 +6,6 @@ import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.lyh.picturerepobackend.config.CosConfig;
 import com.lyh.picturerepobackend.exception.BusinessException;
-import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.manager.CosManager;
 import com.lyh.picturerepobackend.model.dto.file.FileUpload;
 import com.qcloud.cos.model.PutObjectResult;
@@ -40,7 +39,7 @@ public abstract class PictureUploadTemplate {
      * 为了让模板同时兼容url和本地文件上传，这里使用Object类型接收输入源
      */
 
-    public final FileUpload uploadPicture(Object inputPicture, String uploadPathPrefix) throws Exception {
+    public final FileUpload uploadPicture(Object inputPicture, String uploadPathPrefix) {
         //1.校验图片
         validPicture(inputPicture);
         //2.图片上传地址
@@ -50,15 +49,11 @@ public abstract class PictureUploadTemplate {
         String uploadPath = String.format("%s/%s", uploadPathPrefix, uploadFileName);
         File file =null;
         try {
-            //创建临时文件
-            file =File.createTempFile(uploadPath,null);
-            //处理文件源
+            // 创建无路径前缀的临时文件
+            file = File.createTempFile(uuid, null);
             processPicture(inputPicture, file);
-            //上传文件到对象存储
             PutObjectResult putObjectResult = cosManager.putPictureObject(uploadPath, file);
-            //获取图片信息
             ImageInfo imageInfo = putObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
-            //封装返回结果
             return buildFileUpload(file, originalPictureName, uploadPath, imageInfo);
 
         }catch (Exception e){
@@ -104,7 +99,7 @@ public abstract class PictureUploadTemplate {
         int height = imageInfo.getHeight();
         double picScale= NumberUtil.round((double) width / height, 2).doubleValue();
         fileUpload.setUrl(cosConfig.getHost()+"/" + uploadPath);
-        fileUpload.setPicName(FileUtil.mainName(originalPictureName));
+        fileUpload.setPicName(FileUtil.getName(originalPictureName));
         fileUpload.setPicSize(FileUtil.size(file));
         fileUpload.setPicWidth(width);
         fileUpload.setPicHeight(height);

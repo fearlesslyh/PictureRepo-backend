@@ -1,9 +1,9 @@
 package com.lyh.picturerepobackend.common;
 
-import java.io.Serializable;
-
 import com.lyh.picturerepobackend.exception.ErrorCode;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * 响应包装类

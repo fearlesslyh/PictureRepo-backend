@@ -1,5 +1,7 @@
 package com.lyh.picturerepobackend.manager;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
@@ -8,12 +10,21 @@ import cn.hutool.http.HttpStatus;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.lyh.picturerepobackend.config.CosConfig;
+import com.lyh.picturerepobackend.exception.BusinessException;
+import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
 import com.lyh.picturerepobackend.model.dto.file.FileUpload;
 import com.lyh.picturerepobackend.model.enums.FileUploadBizEnum;
 import com.lyh.picturerepobackend.model.enums.ImageFormatEnum;
+import com.qcloud.cos.COSClient;
+import com.qcloud.cos.model.ObjectMetadata;
+import com.qcloud.cos.model.PutObjectRequest;
 import com.qcloud.cos.model.PutObjectResult;
 import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -27,23 +38,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.FileUtil;
-import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.qcloud.cos.COSClient;
-import com.qcloud.cos.model.ObjectMetadata;
-import com.qcloud.cos.model.PutObjectRequest;
-import com.lyh.picturerepobackend.config.CosConfig;
-import com.lyh.picturerepobackend.exception.BusinessException;
-import com.lyh.picturerepobackend.exception.ErrorCode;
-
 /**
  * 文件管理类
  * 负责处理文件上传、删除等操作，支持不同业务类型的上传路径和校验规则
  */
 @Service
+@Deprecated
 public class FileManager {
 
     private static final Logger log = LoggerFactory.getLogger(FileManager.class);
@@ -107,7 +107,7 @@ public class FileManager {
         // 图片上传地址
         String uuid = RandomUtil.randomString(16);
         // String originFilename = multipartFile.getOriginalFilename();
-        String originFilename = FileUtil.mainName(fileUrl);
+        String originFilename = FileUtil.getName(fileUrl);
         String uploadFilename = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid,
                 FileUtil.getSuffix(originFilename));
         String uploadPath = String.format("/%s/%s", uploadPathPrefix, uploadFilename);
@@ -126,7 +126,7 @@ public class FileManager {
             int picWidth = imageInfo.getWidth();
             int picHeight = imageInfo.getHeight();
             double picScale = NumberUtil.round(picWidth * 1.0 / picHeight, 2).doubleValue();
-            uploadPictureResult.setPicName(FileUtil.mainName(originFilename));
+            uploadPictureResult.setPicName(FileUtil.getName(originFilename));
             uploadPictureResult.setPicWidth(picWidth);
             uploadPictureResult.setPicHeight(picHeight);
             uploadPictureResult.setPicScale(picScale);
@@ -259,7 +259,7 @@ public class FileManager {
     private FileUpload packageFileUploadResult(MultipartFile multipartFile, String originFilename, String fileUrl) {
         FileUpload fileUploadResult = new FileUpload();
         fileUploadResult.setUrl(fileUrl);
-        fileUploadResult.setPicName(FileUtil.mainName(originFilename));
+        fileUploadResult.setPicName(FileUtil.getName(originFilename));
         fileUploadResult.setPicSize(multipartFile.getSize());
         try {
             // 获取图片信息
@@ -307,27 +307,7 @@ public class FileManager {
         return path;
     }
 
-    /**
-     * 从 COS 删除文件
-     *
-     * @param fileUrl 文件 URL
-     */
-    public void deleteFile(String fileUrl) {
-        // 1. 校验文件 URL
-        if (StringUtils.isBlank(fileUrl)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件 URL 不能为空");
-        }
 
-        // 2. 从文件 URL 中提取出文件名
-        String filename = extractFilenameFromUrl(fileUrl);
-        if (StringUtils.isBlank(filename)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件 URL 格式错误，无法提取文件名");
-        }
-
-        // 3. 调用 CosManager 的删除方法
-        cosClient.deleteObject(cosConfig.getBucketName(), filename);
-        log.info("文件删除成功, fileUrl: {}", fileUrl);
-    }
 
     /**
      * 删除临时文件

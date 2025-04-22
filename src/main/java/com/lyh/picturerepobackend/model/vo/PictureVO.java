@@ -1,9 +1,6 @@
 package com.lyh.picturerepobackend.model.vo;
 
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.lyh.picturerepobackend.model.entity.Picture;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;

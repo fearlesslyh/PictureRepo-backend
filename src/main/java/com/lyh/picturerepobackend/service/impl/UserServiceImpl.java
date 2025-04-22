@@ -8,18 +8,17 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.picturerepobackend.exception.BusinessException;
 import com.lyh.picturerepobackend.exception.ErrorCode;
+import com.lyh.picturerepobackend.mapper.UserMapper;
 import com.lyh.picturerepobackend.model.dto.user.UserQuery;
 import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.UserRoleEnum;
 import com.lyh.picturerepobackend.model.vo.LoginUserVO;
 import com.lyh.picturerepobackend.model.vo.UserVO;
 import com.lyh.picturerepobackend.service.UserService;
-import com.lyh.picturerepobackend.mapper.UserMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.List;
 import java.util.stream.Collectors;
 

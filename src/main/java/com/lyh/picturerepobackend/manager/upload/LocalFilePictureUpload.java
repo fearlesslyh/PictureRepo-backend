@@ -1,7 +1,6 @@
 package com.lyh.picturerepobackend.manager.upload;
 
 import cn.hutool.core.io.FileUtil;
-import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +17,13 @@ import static com.lyh.picturerepobackend.exception.ErrorCode.PARAMS_ERROR;
  * @date 2025/4/21 17:16
  */
 @Service
-public class localFilePictureUpload extends PictureUploadTemplate{
+public class LocalFilePictureUpload extends PictureUploadTemplate{
+
+    /**
+     * 校验输入源：url或本地文件
+     *
+     * @param inputPicture
+     */
     @Override
     protected void validPicture(Object inputPicture) {
         MultipartFile multipartFile = (MultipartFile) inputPicture;
@@ -34,13 +39,24 @@ public class localFilePictureUpload extends PictureUploadTemplate{
         final List<String> ALLOW_FORMAT_LIST = Arrays.asList("jpg", "jpeg", "png", "gif", "webp");
         ThrowUtils.throwIf(!ALLOW_FORMAT_LIST.contains(suffix), PARAMS_ERROR, "图片格式不支持");
     }
-
+    /**
+     * 获取原始图片名
+     *
+     * @param inputPicture
+     * @return
+     */
     @Override
     protected String getOriginalPictureName(Object inputPicture) {
         MultipartFile multipartFile = (MultipartFile) inputPicture;
         return multipartFile.getOriginalFilename();
     }
 
+    /**
+     * 处理图片并生成本地临时文件
+     * @param inputPicture
+     * @param file
+     * @throws Exception
+     */
     @Override
     protected void processPicture(Object inputPicture, File file) throws Exception {
         MultipartFile multipartFile = (MultipartFile) inputPicture;

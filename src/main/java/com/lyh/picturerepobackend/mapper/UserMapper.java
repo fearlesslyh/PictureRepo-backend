@@ -1,7 +1,7 @@
 package com.lyh.picturerepobackend.mapper;
 
-import com.lyh.picturerepobackend.model.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.lyh.picturerepobackend.model.entity.User;
 
 /**
 * @author RAOYAO

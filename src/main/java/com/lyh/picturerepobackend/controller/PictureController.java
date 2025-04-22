@@ -2,6 +2,7 @@ package com.lyh.picturerepobackend.controller;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lyh.picturerepobackend.annotation.AuthorityCheck;
 import com.lyh.picturerepobackend.common.BaseResponse;
@@ -11,23 +12,24 @@ import com.lyh.picturerepobackend.constant.UserConstant;
 import com.lyh.picturerepobackend.exception.BusinessException;
 import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
-import com.lyh.picturerepobackend.model.dto.picture.PictureEdit;
-import com.lyh.picturerepobackend.model.dto.picture.PictureQuery;
-import com.lyh.picturerepobackend.model.dto.picture.PictureReview;
-import com.lyh.picturerepobackend.model.dto.picture.PictureUpdate;
+import com.lyh.picturerepobackend.manager.CosManager;
+import com.lyh.picturerepobackend.model.dto.picture.*;
 import com.lyh.picturerepobackend.model.entity.Picture;
 import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.PictureReviewStatus;
 import com.lyh.picturerepobackend.model.vo.PictureVO;
 import com.lyh.picturerepobackend.service.PictureService;
 import com.lyh.picturerepobackend.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
+import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
+import java.util.List;
 
 import static com.lyh.picturerepobackend.exception.ErrorCode.*;
 
@@ -38,18 +40,40 @@ import static com.lyh.picturerepobackend.exception.ErrorCode.*;
  */
 @RestController
 @RequestMapping("/picture")
+@Slf4j
 public class PictureController {
     @Resource
     private UserService userService;
 
     @Resource
     private PictureService pictureService;
+    @Resource
+    private CosManager cosManager;
+
+    @PostMapping("/upload/localFile")
+    public BaseResponse<PictureVO> uploadPictureByLocalFile(@RequestPart("file") MultipartFile file, PictureUpload pictureUpload, HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        // 2.  打印日志，方便调试
+        log.info("上传图片请求，图片信息：{}，用户信息：{}", pictureUpload, loginUser);
+        // 3.  调用 service 方法上传图片
+        PictureVO pictureVO = pictureService.uploadPicture(file, pictureUpload, loginUser);
+        // 4.  返回成功结果
+        return ResultUtils.success(pictureVO);
+    }
+
+    @PostMapping("/upload/urlFile")
+    public BaseResponse<PictureVO> uploadPictureByUrlFile(@RequestBody PictureUpload pictureUpload, HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        String fileUrl = pictureUpload.getUrl();
+        PictureVO pictureVO = pictureService.uploadPicture(fileUrl, pictureUpload, loginUser);
+        return ResultUtils.success(pictureVO);
+    }
 
     @PostMapping("/delete")
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> deletePicture(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() < 0) {
-            throw new BusinessException(PARAMS_ERROR, "请求错误");
+            throw new BusinessException(PARAMS_ERROR, "请求的参数为空或id为空");
         }
         User loginUser = userService.getLoginUser(request);
         Long id = deleteRequest.getId();
@@ -65,7 +89,7 @@ public class PictureController {
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updatePicture(@RequestBody PictureUpdate pictureUpdate, HttpServletRequest request) {
         if (pictureUpdate == null || pictureUpdate.getId() < 0) {
-            throw new BusinessException(PARAMS_ERROR, "请求错误");
+            throw new BusinessException(PARAMS_ERROR, "请求的参数为空或id为空");
         }
         Picture picture = new Picture();
         BeanUtils.copyProperties(pictureUpdate, picture);
@@ -89,7 +113,7 @@ public class PictureController {
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Picture> getPicture(Long id, HttpServletRequest request) {
         if (id == null) {
-            throw new BusinessException(PARAMS_ERROR, "请求错误");
+            throw new BusinessException(PARAMS_ERROR, "id不能为空");
         }
         Picture picture = pictureService.getById(id);
         if (picture == null) {
@@ -98,10 +122,11 @@ public class PictureController {
         return ResultUtils.success(picture);
     }
 
+
     @GetMapping("/get/VO")
     public BaseResponse<PictureVO> getPictureVO(Long id, HttpServletRequest request) {
         if (id == null) {
-            throw new BusinessException(PARAMS_ERROR, "请求错误");
+            throw new BusinessException(PARAMS_ERROR, "id不能为空");
         }
         Picture picture = pictureService.getById(id);
         if (picture == null) {
@@ -113,9 +138,9 @@ public class PictureController {
 
     @GetMapping("/list/page")
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Page<Picture>> getPicturePage(@RequestBody PictureQuery pictureQuery) {
+    public BaseResponse<Page<Picture>> getPicturePage( PictureQuery pictureQuery) {
         if (pictureQuery == null) {
-            throw new BusinessException(PARAMS_ERROR, "请求错误");
+            throw new BusinessException(PARAMS_ERROR, "请求的参数为空");
         }
         int current = pictureQuery.getCurrent();
         int size = pictureQuery.getPageSize();
@@ -126,9 +151,9 @@ public class PictureController {
     }
 
     @GetMapping("/list/VO/page")
-    public BaseResponse<Page<PictureVO>> getPictureVOPage(@RequestBody PictureQuery pictureQuery, HttpServletRequest request) {
-        if (pictureQuery == null || pictureQuery.getId() < 0) {
-            throw new BusinessException(PARAMS_ERROR, "请求错误");
+    public BaseResponse<Page<PictureVO>> getPictureVOPage( PictureQuery pictureQuery, HttpServletRequest request) {
+        if (pictureQuery == null) {
+            throw new BusinessException(PARAMS_ERROR, "请求的参数为空");
         }
         int current = pictureQuery.getCurrent();
         int size = pictureQuery.getPageSize();
@@ -146,7 +171,7 @@ public class PictureController {
     @PostMapping("/edit")
     public BaseResponse<Boolean> editPicture(@RequestBody PictureEdit pictureEdit, HttpServletRequest request) {
         if (pictureEdit == null || pictureEdit.getId() < 0) {
-            throw new BusinessException(PARAMS_ERROR, "请求错误");
+            throw new BusinessException(PARAMS_ERROR, "请求的参数为空或id为空");
         }
         Picture picture = new Picture();
         BeanUtils.copyProperties(pictureEdit, picture);
@@ -176,12 +201,38 @@ public class PictureController {
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> reviewPicture(@RequestBody PictureReview pictureReview, HttpServletRequest request) {
         // 审核接口
-        ThrowUtils.throwIf(pictureReview == null, PARAMS_ERROR, "请求错误");
+        ThrowUtils.throwIf(pictureReview == null, PARAMS_ERROR, "请求的参数为空");
         User loginUser = userService.getLoginUser(request);
         if (loginUser == null) {
             throw new BusinessException(NOT_LOGIN_ERROR, "未登录");
         }
         pictureService.reviewPicture(pictureReview, loginUser);
         return ResultUtils.success(true);
+    }
+
+    /**
+     * 查询文件列表
+     *
+     * @param prefix 前缀，用于过滤文件
+     * @return 包含文件 URL 的列表
+     */
+    @GetMapping("/list")
+    public BaseResponse<List<String>> listFiles(@RequestParam(required = false) String prefix) {
+        List<String> fileUrls = cosManager.listObjects(prefix);
+        return ResultUtils.success(fileUrls);
+    }
+
+    /**
+     * 文件下载
+     *
+     * @param filename 文件名
+     * @param response HttpServletResponse
+     */
+    @PostMapping("/download")
+    public void downloadFile(String filename, HttpServletResponse response) {
+        if (StringUtils.isBlank(filename)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件名不能为空");
+        }
+        cosManager.downloadFile(filename, response);
     }
 }
