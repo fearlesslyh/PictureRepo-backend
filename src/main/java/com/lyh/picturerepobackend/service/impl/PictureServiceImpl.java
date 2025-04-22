@@ -107,7 +107,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         picture.setPicWidth(fileUploadResult.getPicWidth());
         picture.setPicHeight(fileUploadResult.getPicHeight());
         picture.setUserId(loginUser.getId());
-        if (pictureId!=null){
+        if (pictureId != null) {
             picture.setEditTime(new Date());
         }
         boolean result = this.saveOrUpdate(picture);
@@ -295,7 +295,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         picture.setEditTime(new Date());
         picture.setTags(JSONUtil.toJsonStr(pictureEdit.getTags()));
         this.validPicture(picture);
-        long id= pictureEdit.getId();
+        long id = pictureEdit.getId();
         Picture oldPicture = this.getById(id);
         ThrowUtils.throwIf(oldPicture == null, NOT_FOUND_ERROR, "图片不存在");
         this.setReviewStatus(picture, loginUser);
@@ -306,6 +306,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     @Override
     public Integer uploadPictureByBatch(PictureUploadByBatch pictureUploadByBatch, User loginUser) {
         String searchText = pictureUploadByBatch.getSearchText();
+        String namePrefix = pictureUploadByBatch.getNamePrefix();
+        if (StrUtil.isBlank(namePrefix)) {
+            namePrefix = searchText;
+        }
         // 格式化数量
         Integer count = pictureUploadByBatch.getCount();
         ThrowUtils.throwIf(count > 30, ErrorCode.PARAMS_ERROR, "最多 30 条");
@@ -336,9 +340,12 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
                 fileUrl = fileUrl.substring(0, questionMarkIndex);
             }
             // 上传图片
-            PictureUpload pictureUploadRequest = new PictureUpload();
+            PictureUpload pictureUpload = new PictureUpload();
+            if (StrUtil.isNotBlank(namePrefix)) {
+                pictureUpload.setPicName(namePrefix + (uploadCount + 1));
+            }
             try {
-                PictureVO pictureVO = this.uploadPicture(fileUrl, pictureUploadRequest, loginUser);
+                PictureVO pictureVO = this.uploadPicture(fileUrl, pictureUpload, loginUser);
                 log.info("图片上传成功, id = {}", pictureVO.getId());
                 uploadCount++;
             } catch (Exception e) {
