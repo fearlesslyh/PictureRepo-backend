@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.util.Objects;
 
 import static com.lyh.picturerepobackend.exception.ErrorCode.SYSTEM_ERROR;
 
@@ -45,7 +46,7 @@ public abstract class PictureUploadTemplate {
         //2.图片上传地址
         String uuid = RandomUtil.randomString(16);
         String originalPictureName = getOriginalPictureName(inputPicture);
-        String uploadFileName = String.format("%s_%s.%s", DateUtil.date(),uuid, FileUtil.getSuffix(originalPictureName));
+        String uploadFileName = String.format("%s_%s.%s", DateUtil.date(),uuid, (Objects.equals(FileUtil.getSuffix(originalPictureName), ""))?"jpg":FileUtil.getSuffix(originalPictureName));
         String uploadPath = String.format("%s/%s", uploadPathPrefix, uploadFileName);
         File file =null;
         try {

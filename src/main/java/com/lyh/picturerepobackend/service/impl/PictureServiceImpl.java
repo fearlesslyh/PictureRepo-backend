@@ -3,6 +3,7 @@ package com.lyh.picturerepobackend.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -37,6 +38,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -303,48 +306,88 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         ThrowUtils.throwIf(!result, OPERATION_ERROR, "图片编辑失败");
     }
 
+    /**
+     * 批量上传图片实现方法
+     *
+     * @param pictureUploadByBatch 批量上传参数对象，包含搜索关键词、命名前缀、数量等参数
+     * @param loginUser            当前登录用户
+     * @return 实际成功上传的图片数量
+     */
     @Override
     public Integer uploadPictureByBatch(PictureUploadByBatch pictureUploadByBatch, User loginUser) {
+        // 参数预处理：获取搜索关键词并设置默认命名前缀
         String searchText = pictureUploadByBatch.getSearchText();
         String namePrefix = pictureUploadByBatch.getNamePrefix();
         if (StrUtil.isBlank(namePrefix)) {
-            namePrefix = searchText;
+            namePrefix = searchText; // 当用户未指定命名前缀时，使用搜索关键词作为前缀
         }
-        // 格式化数量
+
+        // 数量参数校验：限制最大批量上传数量为30
         Integer count = pictureUploadByBatch.getCount();
         ThrowUtils.throwIf(count > 30, ErrorCode.PARAMS_ERROR, "最多 30 条");
-        // 要抓取的地址
+
+        // 构造Bing图片搜索URL（使用异步接口）
         String fetchUrl = String.format("https://cn.bing.com/images/async?q=%s&mmasync=1", searchText);
         Document document;
         try {
+            // 发送HTTP请求获取搜索结果页面
             document = Jsoup.connect(fetchUrl).get();
         } catch (IOException e) {
             log.error("获取页面失败", e);
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "获取页面失败");
         }
+
+        // 解析页面DOM结构：定位图片容器元素
         Element div = document.getElementsByClass("dgControl").first();
         if (ObjUtil.isNull(div)) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "获取元素失败");
         }
-        Elements imgElementList = div.select("img.mimg");
-        int uploadCount = 0;
+
+        // 获取所有图片元素（使用iusc类选择器）
+        Elements imgElementList = div.select(".iusc");
+        int uploadCount = 0;  // 成功计数器
+
+        // 遍历搜索结果图片进行上传
         for (Element imgElement : imgElementList) {
-            String fileUrl = imgElement.attr("src");
+            // 处理图片URL：移除可能存在的查询参数
+//            String fileUrl = imgElement.attr("src");
+            String dataM = imgElement.attr("m");
+            String fileUrl;
+            try {
+                // 解析JSON字符串
+                JSONObject jsonObject = JSONUtil.parseObj(dataM);
+                // 获取murl字段（原始图片URL）
+                fileUrl = jsonObject.getStr("murl");
+            } catch (Exception e) {
+                log.error("解析图片数据失败", e);
+                continue;
+            }
             if (StrUtil.isBlank(fileUrl)) {
                 log.info("当前链接为空，已跳过: {}", fileUrl);
                 continue;
             }
-            // 处理图片上传地址，防止出现转义问题
+            // 截断问号后的参数（避免URL转义问题）
             int questionMarkIndex = fileUrl.indexOf("?");
             if (questionMarkIndex > -1) {
                 fileUrl = fileUrl.substring(0, questionMarkIndex);
             }
-            // 上传图片
+
+            // 获取文件后缀名
+            String fileExtension = getFileExtension(fileUrl);  //  调用getFileExtension方法获取后缀名
+            if (fileExtension == null) {
+                log.warn("无法获取文件类型，已跳过: {}", fileUrl);
+                continue; // 无法获取文件类型，跳过
+            }
+
+            // 构建单个图片上传参数
             PictureUpload pictureUpload = new PictureUpload();
             if (StrUtil.isNotBlank(namePrefix)) {
-                pictureUpload.setPicName(namePrefix + (uploadCount + 1));
+                // 生成格式化的图片名称（前缀+序号）
+                pictureUpload.setPicName(namePrefix + (uploadCount + 1) + "." + fileExtension);
             }
+
             try {
+                // 执行单个图片上传操作
                 PictureVO pictureVO = this.uploadPicture(fileUrl, pictureUpload, loginUser);
                 log.info("图片上传成功, id = {}", pictureVO.getId());
                 uploadCount++;
@@ -352,11 +395,31 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
                 log.error("图片上传失败", e);
                 continue;
             }
+
+            // 达到指定数量时提前终止循环
             if (uploadCount >= count) {
                 break;
             }
         }
         return uploadCount;
     }
-}
 
+    //  添加了获取文件后缀名的函数
+    private String getFileExtension(String fileUrl) {
+        try {
+            URL url = new URL(fileUrl);
+            URLConnection connection = url.openConnection();
+            String contentType = connection.getContentType();  //  获取Content-Type
+            if (contentType == null) {
+                return null;
+            }
+            if (contentType.startsWith("image/")) {
+                return contentType.substring(6); // "image/jpeg" -> "jpeg"  提取后缀名
+            }
+            return null;
+        } catch (IOException e) {
+            log.error("获取文件类型失败: {}", fileUrl, e);
+            return null;
+        }
+    }
+}

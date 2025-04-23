@@ -242,10 +242,9 @@ public class PictureController {
             @RequestBody PictureUploadByBatch pictureUploadByBatch,
             HttpServletRequest request
     ) {
-        ThrowUtils.throwIf(pictureUploadByBatch == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureUploadByBatch == null, ErrorCode.PARAMS_ERROR, "请求的参数为空");
         User loginUser = userService.getLoginUser(request);
         int uploadCount = pictureService.uploadPictureByBatch(pictureUploadByBatch, loginUser);
         return ResultUtils.success(uploadCount);
     }
-
 }
