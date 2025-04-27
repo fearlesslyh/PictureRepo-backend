@@ -36,6 +36,7 @@ public class SpaceController {
     private UserService userService;
 
 
+    // 更新步骤：1.dto转换 2.数据校验 3.填充数据 4.操作数据库更新
     @PostMapping("/update")
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateSpace(@RequestBody SpaceUpdate spaceUpdate) {

@@ -106,15 +106,18 @@ public class PictureController {
         return ResultUtils.success(true);
     }
 
+    //更新步骤：1.dto转换 2.校验数据 3.补充审核状态 4.操作数据库
     @PostMapping("/update")
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updatePicture(@RequestBody PictureUpdate pictureUpdate, HttpServletRequest request) {
         if (pictureUpdate == null || pictureUpdate.getId() < 0) {
             throw new BusinessException(PARAMS_ERROR, "请求的参数为空或id为空");
         }
+        // 将实体类和 DTO 进行转换
         Picture picture = new Picture();
         BeanUtils.copyProperties(pictureUpdate, picture);
         picture.setTags(JSONUtil.toJsonStr(pictureUpdate.getTags()));
+        //校验数据
         pictureService.validPicture(picture);
         Long id = picture.getId();
         Picture serviceById = pictureService.getById(id);
