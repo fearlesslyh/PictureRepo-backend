@@ -1,9 +1,12 @@
 package com.lyh.picturerepobackend.controller;
 
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.lyh.picturerepobackend.annotation.AuthorityCheck;
 import com.lyh.picturerepobackend.common.BaseResponse;
 import com.lyh.picturerepobackend.common.DeleteRequest;
@@ -22,14 +25,20 @@ import com.lyh.picturerepobackend.service.PictureService;
 import com.lyh.picturerepobackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.spring.web.json.Json;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.lyh.picturerepobackend.exception.ErrorCode.*;
 
@@ -49,6 +58,15 @@ public class PictureController {
     private PictureService pictureService;
     @Resource
     private CosManager cosManager;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    private final Cache<String, String> LOCAL_CACHE =
+            Caffeine.newBuilder().initialCapacity(1024)
+                    .maximumSize(10000L)
+                    // 缓存 5 分钟移除
+                    .expireAfterWrite(5L, TimeUnit.MINUTES)
+                    .build();
 
     @PostMapping("/upload/localFile")
     public BaseResponse<PictureVO> uploadPictureByLocalFile(@RequestPart("file") MultipartFile file, PictureUpload pictureUpload, HttpServletRequest request) {
@@ -246,5 +264,71 @@ public class PictureController {
         User loginUser = userService.getLoginUser(request);
         int uploadCount = pictureService.uploadPictureByBatch(pictureUploadByBatch, loginUser);
         return ResultUtils.success(uploadCount);
+    }
+
+    @PostMapping("list/page/vo/cache")
+    public BaseResponse<Page<PictureVO>> listPictureVOByPageWithCache(@RequestBody PictureQuery pictureQuery, HttpServletRequest request) {
+        long current = pictureQuery.getCurrent();
+        long size = pictureQuery.getPageSize();
+        //限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR, "每页数量不能超过20");
+        //普通用户只能查看已过审的数据
+        pictureQuery.setReviewStatus(PictureReviewStatus.PASS.getValue());
+
+        //构建缓存key
+        String queryCondition = JSONUtil.toJsonStr(pictureQuery);
+        String cacheKey = DigestUtils.md5DigestAsHex(queryCondition.getBytes());
+        String redisKey = "picture:listPictureVOByPageWithCache" + cacheKey;
+        //从缓存中获取数据
+        ValueOperations<String, String> valuesOps = stringRedisTemplate.opsForValue();
+        String cacheValue = valuesOps.get(redisKey);
+        if (cacheValue != null) {
+            Page<PictureVO> cachePage = JSONUtil.toBean(cacheValue, Page.class);
+            return ResultUtils.success(cachePage);
+        }
+        //缓存中没有数据，从数据库中获取数据
+        Page<Picture> picturePage = new Page<>(current, size);
+        QueryWrapper<Picture> queryWrapper = pictureService.getQueryWrapper(pictureQuery);
+        Page<Picture> picturePageResult = pictureService.page(picturePage, queryWrapper);
+        Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePageResult, request);
+        //将数据放入缓存
+        String cachePageJson = JSONUtil.toJsonStr(pictureVOPage);
+        //5-10分钟随机过期， 防止缓存雪崩
+        int cacheExpireTime= 400+ RandomUtil.randomInt(0, 600);
+        valuesOps.set(redisKey, cachePageJson, cacheExpireTime, TimeUnit.MINUTES);
+        //返回数据
+        return ResultUtils.success(pictureVOPage);
+    }
+
+    @PostMapping("list/page/vo/caffeine")
+    public BaseResponse<Page<PictureVO>> listPictureVOByPageWithCaffeine(@RequestBody PictureQuery pictureQuery, HttpServletRequest request) {
+        long current = pictureQuery.getCurrent();
+        long size = pictureQuery.getPageSize();
+        //限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR, "每页数量不能超过20");
+        //普通用户只能查看已过审的数据
+        pictureQuery.setReviewStatus(PictureReviewStatus.PASS.getValue());
+
+        //构建缓存key
+        String queryCondition = JSONUtil.toJsonStr(pictureQuery);
+        String hashKey = DigestUtils.md5DigestAsHex(queryCondition.getBytes());
+        String cacheKey = "picture:listPictureVOByPageWithCaffeine" + hashKey;
+        //从缓存中获取数据
+        ValueOperations<String, String> valuesOps = stringRedisTemplate.opsForValue();
+        String cacheValue = valuesOps.get(cacheKey);
+        if (cacheValue != null) {
+            Page<PictureVO> cachePage = JSONUtil.toBean(cacheValue, Page.class);
+            return ResultUtils.success(cachePage);
+        }
+        //缓存中没有数据，从数据库中获取数据
+        Page<Picture> picturePage = new Page<>(current, size);
+        QueryWrapper<Picture> queryWrapper = pictureService.getQueryWrapper(pictureQuery);
+        Page<Picture> picturePageResult = pictureService.page(picturePage, queryWrapper);
+        Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePageResult, request);
+        //将数据放入缓存
+        String cachePageJson = JSONUtil.toJsonStr(pictureVOPage);
+        LOCAL_CACHE.put(cacheKey, cachePageJson);
+        //返回数据
+        return ResultUtils.success(pictureVOPage);
     }
 }

@@ -17,6 +17,11 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB  # 设置上传文件的最大大小
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    connect-timeout: 10000
 
 logging:
   level:
