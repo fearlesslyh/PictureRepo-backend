@@ -146,26 +146,55 @@ public class PictureController {
     }
 
 
+    // 自主实现的拓展功能：我们首先尝试从 Redis 缓存中获取 PictureVO。
+    //
+    //如果缓存中没有，我们使用 Redisson 的 RLock 来获取一个分布式锁。
+    //
+    //只有拿到锁的线程才会去数据库查询，并把结果放入缓存。
+    //
+    //其他线程会等待锁释放，然后直接从缓存中读取数据，避免了缓存击穿。
     @GetMapping("/get/VO")
     public BaseResponse<PictureVO> getPictureVO(Long id, HttpServletRequest request) {
         if (id == null) {
             throw new BusinessException(PARAMS_ERROR, "id不能为空");
         }
         final String cacheKey = "picture:vo:" + id;
-        String cacheValue = stringRedisTemplate.opsForValue().get(cacheKey);
-        if (StringUtils.isNotBlank(cacheValue)) {
-            return ResultUtils.success(JSONUtil.toBean(cacheValue, PictureVO.class));
+        // 尝试从本地缓存中获取
+        String cacheLocalValue = LOCAL_CACHE.getIfPresent(cacheKey);
+        if (cacheLocalValue != null){
+            if (cacheLocalValue.equals("null")){
+                throw new BusinessException(NOT_FOUND_ERROR, "图片不存在");
+            }
+            PictureVO vo = JSONUtil.toBean(cacheLocalValue, PictureVO.class);
+            return ResultUtils.success(vo);
         }
-
+        // 尝试从 Redis 中获取
+        String cacheRedisValue = stringRedisTemplate.opsForValue().get(cacheKey);
+        if (StringUtils.isNotBlank(cacheRedisValue)) {
+            if ("null".equals(cacheRedisValue)) { // 检查是否是缓存的空对象
+                throw new BusinessException(NOT_FOUND_ERROR, "图片不存在");
+            }
+            return ResultUtils.success(JSONUtil.toBean(cacheRedisValue, PictureVO.class));
+        }
+        // 缓存没有数据，尝试获取分布式锁
         RLock lock = redissonClient.getLock("lock:" + cacheKey); // 使用 Redisson 锁
         try {
-            if (lock.tryLock(5, TimeUnit.SECONDS)) {
+            // 尝试获取锁，如果获取不到，会等待5秒
+            if (lock.tryLock(7, TimeUnit.SECONDS)) {
+                // 从数据库查询
                 Picture picture = pictureService.getById(id);
                 if (picture == null) {
+                    ValueOperations<String, String> valuesOps = stringRedisTemplate.opsForValue();
+                    // 设置缓存空对象，避免缓存穿透
+                    valuesOps.set(cacheKey, "null", 60, TimeUnit.SECONDS);
+                    LOCAL_CACHE.put(cacheKey, "null");
                     throw new BusinessException(NOT_FOUND_ERROR, "图片不存在");
                 }
+                // 数据库查询数据成功，设置redis和本地缓存的数据
                 PictureVO pictureVO = pictureService.getPictureVO(picture, request);
-                stringRedisTemplate.opsForValue().set(cacheKey, JSONUtil.toJsonStr(pictureVO), 1, TimeUnit.HOURS); // 缓存 1 小时
+                ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+                valueOperations.set(cacheKey, JSONUtil.toJsonStr(pictureVO), 1, TimeUnit.HOURS);// 缓存一小时
+                LOCAL_CACHE.put(cacheKey, JSONUtil.toJsonStr(pictureVO));
                 return ResultUtils.success(pictureVO);
             }
         } catch (InterruptedException e) {
