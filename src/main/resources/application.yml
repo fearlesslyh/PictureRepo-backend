@@ -3,6 +3,9 @@ server:
   address: 0.0.0.0
   servlet:
     context-path: /api
+    session:
+      cookie:
+        max-age: 2592000
 
 spring:
   datasource:
@@ -22,6 +25,8 @@ spring:
     host: 127.0.0.1
     port: 6379
     connect-timeout: 10000
+  session:
+    timeout: 2592000
 
 logging:
   level:

@@ -43,4 +43,9 @@ public class FileUpload {
      * 图片格式
      */
     private String picFormat;
+    /**
+     * 缩略图 url
+     */
+    private String thumbnailUrl;
+
 }
