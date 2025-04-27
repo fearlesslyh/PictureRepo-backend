@@ -13,6 +13,7 @@ import com.lyh.picturerepobackend.constant.UserConstant;
 import com.lyh.picturerepobackend.exception.BusinessException;
 import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
+import com.lyh.picturerepobackend.manager.CosManager;
 import com.lyh.picturerepobackend.manager.upload.LocalFilePictureUpload;
 import com.lyh.picturerepobackend.manager.upload.PictureUploadTemplate;
 import com.lyh.picturerepobackend.manager.upload.UrlFilePictureUpload;
@@ -33,6 +34,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -66,6 +68,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private CosManager cosManager;
 
 
     public PictureVO uploadPicture(Object inputPicture, PictureUpload pictureUpload, User loginUser) {
@@ -404,6 +409,26 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             }
         }
         return uploadCount;
+    }
+
+    @Async
+    @Override
+    public void deletePicture(Picture oldPicture) {
+        // 判断图片是否被引用
+        String pictureUrl = oldPicture.getUrl();
+        Long count = this.lambdaQuery()
+                .eq(Picture::getUrl, pictureUrl)
+                .count();
+        if (count > 1) {
+            log.warn("图片被引用，无法删除: {}", pictureUrl);
+            return;
+        }
+        // FIXME 注意，这里的 url 包含了域名，实际上只要传 key 值（存储路径）就够了
+        cosManager.deleteFile(pictureUrl);
+        String thumbnailUrl = oldPicture.getThumbnailUrl();
+        if (StrUtil.isNotBlank(thumbnailUrl)) {
+            cosManager.deleteFile(thumbnailUrl);
+        }
     }
 
     //  添加了获取文件后缀名的函数

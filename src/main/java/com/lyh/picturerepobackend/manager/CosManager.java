@@ -5,6 +5,7 @@ import com.lyh.picturerepobackend.config.CosConfig;
 import com.lyh.picturerepobackend.exception.BusinessException;
 import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.qcloud.cos.COSClient;
+import com.qcloud.cos.exception.CosClientException;
 import com.qcloud.cos.model.*;
 import com.qcloud.cos.model.ciModel.persistence.PicOperations;
 import lombok.extern.slf4j.Slf4j;
@@ -129,11 +130,11 @@ public class CosManager {
     /**
      * 从 COS 删除文件
      *
-     * @param filename 文件名
+     * @param key 文件名
      */
-    public void deleteFile(String filename) {
-        cosClient.deleteObject(cosConfig.getBucketName(), filename);
-        log.info("文件删除成功, filename: {}", filename);
+    public void deleteFile(String key) throws CosClientException {
+        cosClient.deleteObject(cosConfig.getBucketName(), key);
+        log.info("文件删除成功, filename: {}", key);
     }
 
     /**
@@ -181,7 +182,7 @@ public class CosManager {
         picOperations.setIsPicInfo(1);
         List<PicOperations.Rule> rules = new ArrayList<>();
         // 图片压缩（转成 webp 格式）
-        String webpKey = FileUtil.getName(key) + ".webp";
+        String webpKey = FileUtil.mainName(key) + ".webp";
         PicOperations.Rule compressRule = new PicOperations.Rule();
         compressRule.setRule("imageMogr2/format/webp");
         compressRule.setBucket(cosConfig.getBucketName());
@@ -191,7 +192,7 @@ public class CosManager {
         if (file.length() > 20 * 1024) {
             PicOperations.Rule thumbnailRule = new PicOperations.Rule();
             thumbnailRule.setBucket(cosConfig.getBucketName());
-            String thumbnailKey = FileUtil.getName(key) + "_thumbnail." + FileUtil.getSuffix(key);
+            String thumbnailKey = FileUtil.mainName(key) + "_thumbnail." + FileUtil.getSuffix(key);
             thumbnailRule.setFileId(thumbnailKey);
             // 缩放规则 /thumbnail/<Width>x<Height>>（如果大于原图宽高，则不处理）
             thumbnailRule.setRule(String.format("imageMogr2/thumbnail/%sx%s>", 128, 128));
