@@ -24,6 +24,8 @@ import com.lyh.picturerepobackend.model.vo.PictureVO;
 import com.lyh.picturerepobackend.service.PictureService;
 import com.lyh.picturerepobackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -60,6 +62,9 @@ public class PictureController {
     private CosManager cosManager;
     @Resource
     private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private RedissonClient redissonClient;
 
     private final Cache<String, String> LOCAL_CACHE =
             Caffeine.newBuilder().initialCapacity(1024)
@@ -146,12 +151,30 @@ public class PictureController {
         if (id == null) {
             throw new BusinessException(PARAMS_ERROR, "id不能为空");
         }
-        Picture picture = pictureService.getById(id);
-        if (picture == null) {
-            throw new BusinessException(NOT_FOUND_ERROR, "图片不存在");
+        final String cacheKey = "picture:vo:" + id;
+        String cacheValue = stringRedisTemplate.opsForValue().get(cacheKey);
+        if (StringUtils.isNotBlank(cacheValue)) {
+            return ResultUtils.success(JSONUtil.toBean(cacheValue, PictureVO.class));
         }
-        PictureVO pictureVO = pictureService.getPictureVO(picture, request);
-        return ResultUtils.success(pictureVO);
+
+        RLock lock = redissonClient.getLock("lock:" + cacheKey); // 使用 Redisson 锁
+        try {
+            if (lock.tryLock(5, TimeUnit.SECONDS)) {
+                Picture picture = pictureService.getById(id);
+                if (picture == null) {
+                    throw new BusinessException(NOT_FOUND_ERROR, "图片不存在");
+                }
+                PictureVO pictureVO = pictureService.getPictureVO(picture, request);
+                stringRedisTemplate.opsForValue().set(cacheKey, JSONUtil.toJsonStr(pictureVO), 1, TimeUnit.HOURS); // 缓存 1 小时
+                return ResultUtils.success(pictureVO);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BusinessException(OPERATION_ERROR, "获取锁失败");
+        } finally {
+            lock.unlock();
+        }
+        return null;
     }
 
     @GetMapping("/list/page")
