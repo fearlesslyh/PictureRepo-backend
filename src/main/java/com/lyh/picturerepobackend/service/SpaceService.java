@@ -10,4 +10,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface SpaceService extends IService<Space> {
 
+    void validSpace(Space space, boolean add);
+
+    void fillSpaceBySpaceLevel(Space space);
+
 }

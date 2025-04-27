@@ -14,6 +14,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements SpaceService{
 
+    @Override
+    public void validSpace(Space space, boolean add) {
+
+    }
+
+    @Override
+    public void fillSpaceBySpaceLevel(Space space) {
+
+    }
 }
 
 
