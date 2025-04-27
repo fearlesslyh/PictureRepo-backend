@@ -2,7 +2,6 @@ package com.lyh.picturerepobackend.model.dto.space;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.checkerframework.checker.units.qual.A;
 
 /**
  * @author <a href=https://github.com/fearlesslyh> 梁懿豪 </a>

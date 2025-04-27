@@ -1,6 +1,5 @@
 package com.lyh.picturerepobackend.controller;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.lyh.picturerepobackend.annotation.AuthorityCheck;
 import com.lyh.picturerepobackend.common.BaseResponse;
 import com.lyh.picturerepobackend.common.ResultUtils;
@@ -10,10 +9,8 @@ import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
 import com.lyh.picturerepobackend.model.dto.space.SpaceUpdate;
 import com.lyh.picturerepobackend.model.entity.Space;
-import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.service.SpaceService;
 import com.lyh.picturerepobackend.service.UserService;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author <a href=https://github.com/fearlesslyh> 梁懿豪 </a>

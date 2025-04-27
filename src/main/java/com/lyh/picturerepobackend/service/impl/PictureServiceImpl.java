@@ -23,7 +23,6 @@ import com.lyh.picturerepobackend.model.dto.picture.*;
 import com.lyh.picturerepobackend.model.entity.Picture;
 import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.PictureReviewStatus;
-import com.lyh.picturerepobackend.model.enums.UserRoleEnum;
 import com.lyh.picturerepobackend.model.vo.PictureVO;
 import com.lyh.picturerepobackend.model.vo.UserVO;
 import com.lyh.picturerepobackend.service.PictureService;

@@ -5,10 +5,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.picturerepobackend.exception.BusinessException;
 import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
+import com.lyh.picturerepobackend.mapper.SpaceMapper;
 import com.lyh.picturerepobackend.model.entity.Space;
 import com.lyh.picturerepobackend.model.enums.SpaceLevelEnum;
 import com.lyh.picturerepobackend.service.SpaceService;
-import com.lyh.picturerepobackend.mapper.SpaceMapper;
 import org.springframework.stereotype.Service;
 
 /**
