@@ -266,6 +266,8 @@ public class PictureController {
         return ResultUtils.success(uploadCount);
     }
 
+    //redis缓存：先查询缓存，如果没有，从数据库中获取数据，再存入缓存中。
+    @Deprecated
     @PostMapping("list/page/vo/cache")
     public BaseResponse<Page<PictureVO>> listPictureVOByPageWithCache(@RequestBody PictureQuery pictureQuery, HttpServletRequest request) {
         long current = pictureQuery.getCurrent();
@@ -294,12 +296,14 @@ public class PictureController {
         //将数据放入缓存
         String cachePageJson = JSONUtil.toJsonStr(pictureVOPage);
         //5-10分钟随机过期， 防止缓存雪崩
-        int cacheExpireTime= 400+ RandomUtil.randomInt(0, 600);
+        int cacheExpireTime = 400 + RandomUtil.randomInt(0, 600);
         valuesOps.set(redisKey, cachePageJson, cacheExpireTime, TimeUnit.MINUTES);
         //返回数据
         return ResultUtils.success(pictureVOPage);
     }
 
+    //本地缓存：先查询本地缓存，如果没有，从数据库中获取数据，再存入本地缓存中。
+    @Deprecated
     @PostMapping("list/page/vo/caffeine")
     public BaseResponse<Page<PictureVO>> listPictureVOByPageWithCaffeine(@RequestBody PictureQuery pictureQuery, HttpServletRequest request) {
         long current = pictureQuery.getCurrent();
@@ -331,4 +335,74 @@ public class PictureController {
         //返回数据
         return ResultUtils.success(pictureVOPage);
     }
+
+    //多级缓存：先查询本地缓存，如果没有，从redis中读取数据，如果命中，则存入本地缓存再返回。如果没有命中，则从数据库中获取数据，再存入redis和本地缓存中。
+    @PostMapping("list/page/vo/multiCache")
+    public BaseResponse<Page<PictureVO>> listPictureVOByPageWithMultiCache(@RequestBody PictureQuery pictureQuery, HttpServletRequest request) {
+        long current = pictureQuery.getCurrent();
+        long size = pictureQuery.getPageSize();
+        //限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR, "每页数量不能超过20");
+        //普通用户只能查看已过审的数据
+        pictureQuery.setReviewStatus(PictureReviewStatus.PASS.getValue());
+        //构建缓存key，优先从本地缓存中读取数据。如果命中，则直接返回。
+        String queryCondition = JSONUtil.toJsonStr(pictureQuery);
+        String hashKey = DigestUtils.md5DigestAsHex(queryCondition.getBytes());
+        String cacheKey = "picture:listPictureVOByPageWithMultiCache" + hashKey;
+        String cacheValue = LOCAL_CACHE.getIfPresent(cacheKey);
+        if (cacheValue != null) {
+            Page<PictureVO> cachePage = JSONUtil.toBean(cacheValue, Page.class);
+            return ResultUtils.success(cachePage);
+        }
+        //本地缓存中没有数据，从redis中读取数据
+        ValueOperations<String, String> valuesOps = stringRedisTemplate.opsForValue();
+        cacheValue = valuesOps.get(cacheKey);
+        if (cacheValue != null) {
+            //如果命中了redis缓存，存入本地缓存再返回
+            LOCAL_CACHE.put(cacheKey, cacheValue);
+            Page<PictureVO> cachePage = JSONUtil.toBean(cacheValue, Page.class);
+            return ResultUtils.success(cachePage);
+        }
+        //redis中也没有数据，从数据库中获取数据
+        Page<Picture> picturePage = new Page<>(current, size);
+        QueryWrapper<Picture> queryWrapper = pictureService.getQueryWrapper(pictureQuery);
+        Page<Picture> picturePageResult = pictureService.page(picturePage, queryWrapper);
+        Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePageResult, request);
+        //将数据放入缓存
+        String cachePageJson = JSONUtil.toJsonStr(pictureVOPage);
+        LOCAL_CACHE.put(cacheKey, cachePageJson);
+        //更新redis缓存, 5-10分钟随机过期， 防止缓存雪崩
+        valuesOps.set(cacheKey, cachePageJson, 400 + RandomUtil.randomInt(0, 600), TimeUnit.MINUTES);
+        //返回数据
+        return ResultUtils.success(pictureVOPage);
+    }
+
+    // 拓展：手动刷新缓存：在某些情况下，数据更新较为频繁，但自动刷新缓存机制可能存在延迟，可以通过手动刷新来解决。、
+    // 提供一个刷新缓存的接口，仅管理员可调用。提供管理后台，支持管理员手动刷新指定缓存。
+    @PostMapping("list/page/manualRefresh")
+    @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> manualRefreshCache(@RequestBody PictureQuery pictureQuery, HttpServletRequest request) {
+        if (pictureQuery == null) {
+            throw new BusinessException(PARAMS_ERROR, "请求的参数为空");
+        }
+        long current = pictureQuery.getCurrent();
+        long size = pictureQuery.getPageSize();
+        //构造缓存key
+        String queryCondition = JSONUtil.toJsonStr(pictureQuery);
+        String hashKey = DigestUtils.md5DigestAsHex(queryCondition.getBytes());
+        String cacheKey = "picture:listPictureVOByPageWithMultiCache" + hashKey;
+        //从数据库中获取数据
+        Page<Picture> picturePage = new Page<>(current, size);
+        QueryWrapper<Picture> queryWrapper = pictureService.getQueryWrapper(pictureQuery);
+        Page<Picture> picturePageResult = pictureService.page(picturePage, queryWrapper);
+        Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePageResult, request);
+        String cachePageValue = JSONUtil.toJsonStr(pictureVOPage);
+        //更新本地缓存和redis缓存
+        LOCAL_CACHE.put(cacheKey, cachePageValue);
+        ValueOperations<String, String> valuesOps = stringRedisTemplate.opsForValue();
+        valuesOps.set(cacheKey, cachePageValue, 400 + RandomUtil.randomInt(0, 600), TimeUnit.MINUTES);
+        //返回成功
+        return ResultUtils.success(true);
+    }
+
 }

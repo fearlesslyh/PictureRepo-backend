@@ -215,7 +215,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
                 .map(Picture::getUserId)
                 .collect(Collectors.toSet());
         //根据userId集合查询用户列表，并将用户列表按照userId分组，listByIds是mybatis-plus提供的方法，查询用户id
-        Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
+        Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet)
+                .stream()
                 .collect(Collectors.groupingBy(User::getId));
         //遍历pictureVOList，为每个PictureVO对象设置用户信息
         pictureVOList.forEach(pictureVO -> {
