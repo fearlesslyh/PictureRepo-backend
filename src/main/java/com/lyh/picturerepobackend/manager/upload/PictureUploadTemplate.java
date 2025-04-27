@@ -64,13 +64,15 @@ public abstract class PictureUploadTemplate {
             List<CIObject> objectList = processResults.getObjectList();
             if (CollUtil.isNotEmpty(objectList)) {
                 CIObject compressObject = objectList.get(0);
-                CIObject thumbnailCiObject = objectList.get(1);
+                CIObject thumbnailCiObject = compressObject;
+                if (objectList.size() > 1) {
+                    thumbnailCiObject = objectList.get(1);
+                }
                 //封装压缩图返回结果
                 return buildFileUpload(originalPictureName, compressObject, thumbnailCiObject);
             }
             // 封装原图返回结果
             return buildFileUpload(file, originalPictureName, uploadPath, imageInfo);
-
         } catch (Exception e) {
             log.error("图片上传到对象存储失败", e);
             throw new BusinessException(SYSTEM_ERROR, "图片上传失败，请稍后重试");

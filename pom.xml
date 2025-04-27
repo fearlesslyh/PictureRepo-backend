@@ -92,6 +92,12 @@
             <artifactId>redisson-spring-boot-starter</artifactId>
             <version>3.41.0</version>
         </dependency>
+        <!-- Spring Session + Redis -->
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
+        </dependency>
+
 
     </dependencies>
     <dependencyManagement>
