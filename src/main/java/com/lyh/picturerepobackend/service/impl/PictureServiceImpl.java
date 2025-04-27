@@ -40,6 +40,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Date;
@@ -423,11 +424,21 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             log.warn("图片被引用，无法删除: {}", pictureUrl);
             return;
         }
-        // FIXME 注意，这里的 url 包含了域名，实际上只要传 key 值（存储路径）就够了
-        cosManager.deleteFile(pictureUrl);
-        String thumbnailUrl = oldPicture.getThumbnailUrl();
-        if (StrUtil.isNotBlank(thumbnailUrl)) {
-            cosManager.deleteFile(thumbnailUrl);
+        //  注意，这里的 url 包含了域名，实际上只要传 key 值（存储路径）就够了
+        try {
+            // 提取路径部分
+            String picturePath = new URL(pictureUrl).getPath();
+            cosManager.deleteFile(picturePath);
+
+            // 清理缩略图
+            String thumbnailUrl = oldPicture.getThumbnailUrl();
+            if (StrUtil.isNotBlank(thumbnailUrl)) {
+                String thumbnailPath = new URL(thumbnailUrl).getPath();
+                cosManager.deleteFile(thumbnailPath);
+            }
+        } catch (MalformedURLException e) {
+            log.error("处理图片删除时遇到格式错误的 URL。图片 URL: {}", pictureUrl, e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"格式错误的 URL");
         }
     }
 
