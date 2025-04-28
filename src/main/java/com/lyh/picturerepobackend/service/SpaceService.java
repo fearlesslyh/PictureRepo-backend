@@ -1,7 +1,9 @@
 package com.lyh.picturerepobackend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lyh.picturerepobackend.model.dto.space.SpaceAdd;
 import com.lyh.picturerepobackend.model.entity.Space;
+import com.lyh.picturerepobackend.model.entity.User;
 
 /**
 * @author RAOYAO
@@ -13,5 +15,7 @@ public interface SpaceService extends IService<Space> {
     void validSpace(Space space, boolean add);
 
     void fillSpaceBySpaceLevel(Space space);
+
+    long addSpace(SpaceAdd spaceAdd, User loginUser);
 
 }
