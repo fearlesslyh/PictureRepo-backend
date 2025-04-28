@@ -86,6 +86,12 @@ public class SpaceVO implements Serializable {
     private UserVO user;
 
     /**
+     * 空间 id
+     */
+    private Long spaceId;
+
+
+    /**
      * 权限列表
      */
     private List<String> permissionList = new ArrayList<>();
