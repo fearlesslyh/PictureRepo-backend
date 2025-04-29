@@ -91,24 +91,18 @@ public class PictureController {
     }
 
     @PostMapping("/delete")
-    @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> deletePicture(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() < 0) {
             throw new BusinessException(PARAMS_ERROR, "请求的参数为空或id为空");
         }
-        User loginUser = userService.getLoginUser(request);
         Long id = deleteRequest.getId();
-        if (loginUser == null || id == null) {
-            throw new BusinessException(NOT_LOGIN_ERROR, "未登录");
-        }
-        boolean result = pictureService.removeById(id);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "删除失败");
+        User loginUser = userService.getLoginUser(request);
+        pictureService.deletePicture(id, loginUser);
         return ResultUtils.success(true);
     }
 
     //更新步骤：1.dto转换 2.校验数据 3.补充审核状态 4.操作数据库
     @PostMapping("/update")
-    @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updatePicture(@RequestBody PictureUpdate pictureUpdate, HttpServletRequest request) {
         if (pictureUpdate == null || pictureUpdate.getId() < 0) {
             throw new BusinessException(PARAMS_ERROR, "请求的参数为空或id为空");
@@ -177,10 +171,10 @@ public class PictureController {
             }
             return ResultUtils.success(JSONUtil.toBean(cacheRedisValue, PictureVO.class));
         }
-        // 缓存没有数据，尝试获取分布式锁
+        // 如果redis缓存没有数据，尝试获取分布式锁
         RLock lock = redissonClient.getLock("lock:" + cacheKey); // 使用 Redisson 锁
         try {
-            // 尝试获取锁，如果获取不到，会等待5秒
+            // 尝试获取锁，如果获取不到，会等待7秒
             if (lock.tryLock(7, TimeUnit.SECONDS)) {
                 // 从数据库查询
                 Picture picture = pictureService.getById(id);
@@ -190,6 +184,13 @@ public class PictureController {
                     valuesOps.set(cacheKey, "null", 60, TimeUnit.SECONDS);
                     LOCAL_CACHE.put(cacheKey, "null");
                     throw new BusinessException(NOT_FOUND_ERROR, "图片不存在");
+                }
+                // 空间权限校验
+                Long spaceId = picture.getSpaceId();
+                if (spaceId != null) {
+                    // 检查空间权限
+                    User loginUser = userService.getLoginUser(request);
+                    pictureService.checkPictureAuthority(picture, loginUser);
                 }
                 // 数据库查询数据成功，设置redis和本地缓存的数据
                 PictureVO pictureVO = pictureService.getPictureVO(picture, request);
@@ -244,27 +245,8 @@ public class PictureController {
         if (pictureEdit == null || pictureEdit.getId() < 0) {
             throw new BusinessException(PARAMS_ERROR, "请求的参数为空或id为空");
         }
-        Picture picture = new Picture();
-        BeanUtils.copyProperties(pictureEdit, picture);
-        picture.setTags(JSONUtil.toJsonStr(pictureEdit.getTags()));
-        picture.setEditTime(new Date());
-        pictureService.validPicture(picture);
-        //查询要编辑的图片是否存在
-        Long id = pictureEdit.getId();
-        Picture serviceById = pictureService.getById(id);
-        if (serviceById == null) {
-            throw new BusinessException(NOT_FOUND_ERROR, "图片不存在");
-        }
-        //本人和管理员才可编辑
         User loginUser = userService.getLoginUser(request);
-        if (loginUser == null || !loginUser.getId().equals(serviceById.getUserId())) {
-            throw new BusinessException(NO_AUTH_ERROR, "无权限");
-        }
-        //补充审核状态。如果是管理员则直接审核通过，如果是普通用户则审核状态为审核中
-        pictureService.setReviewStatus(picture, loginUser);
-        //操作数据库
-        boolean result = pictureService.updateById(picture);
-        ThrowUtils.throwIf(!result, OPERATION_ERROR, "图片更新失败");
+        pictureService.editPicture(pictureEdit, loginUser);
         return ResultUtils.success(true);
     }
 

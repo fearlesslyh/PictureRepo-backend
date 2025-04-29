@@ -49,5 +49,9 @@ public interface PictureService extends IService<Picture> {
      */
     Integer uploadPictureByBatch(PictureUploadByBatch pictureUploadByBatch, User loginUser);
 
-    void deletePicture(Picture picture);
+    void clearPictureFile(Picture picture);
+
+    void checkPictureAuthority(Picture picture, User loginUser);
+
+    void deletePicture(long pictureId, User loginUser);
 }
