@@ -21,11 +21,13 @@ import com.lyh.picturerepobackend.mapper.PictureMapper;
 import com.lyh.picturerepobackend.model.dto.file.FileUpload;
 import com.lyh.picturerepobackend.model.dto.picture.*;
 import com.lyh.picturerepobackend.model.entity.Picture;
+import com.lyh.picturerepobackend.model.entity.Space;
 import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.PictureReviewStatus;
 import com.lyh.picturerepobackend.model.vo.PictureVO;
 import com.lyh.picturerepobackend.model.vo.UserVO;
 import com.lyh.picturerepobackend.service.PictureService;
+import com.lyh.picturerepobackend.service.SpaceService;
 import com.lyh.picturerepobackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -72,11 +74,24 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     @Resource
     private CosManager cosManager;
 
+    @Resource
+    private SpaceService spaceService;
+
 
     public PictureVO uploadPicture(Object inputPicture, PictureUpload pictureUpload, User loginUser) {
         // 0. 校验用户是否登录
         if (loginUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "用户未登录");
+        }
+        // 校验空间是否存在
+        Long spaceId = pictureUpload.getSpaceId();
+        if (spaceId != null) {
+            Space space = spaceService.getById(spaceId);
+            ThrowUtils.throwIf(space == null, NOT_FOUND_ERROR, "空间不存在");
+            // 必须是本人或管理员才可上传
+            if (loginUser.getId().equals(space.getUserId())){
+
+            }
         }
         // 1.校验文件是否为空
         if (inputPicture == null) {
