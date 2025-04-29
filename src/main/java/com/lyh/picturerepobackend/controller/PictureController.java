@@ -18,10 +18,12 @@ import com.lyh.picturerepobackend.exception.ThrowUtils;
 import com.lyh.picturerepobackend.manager.CosManager;
 import com.lyh.picturerepobackend.model.dto.picture.*;
 import com.lyh.picturerepobackend.model.entity.Picture;
+import com.lyh.picturerepobackend.model.entity.Space;
 import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.PictureReviewStatus;
 import com.lyh.picturerepobackend.model.vo.PictureVO;
 import com.lyh.picturerepobackend.service.PictureService;
+import com.lyh.picturerepobackend.service.SpaceService;
 import com.lyh.picturerepobackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -63,6 +65,9 @@ public class PictureController {
 
     @Resource
     private RedissonClient redissonClient;
+
+    @Resource
+    private SpaceService spaceService;
 
     private final Cache<String, String> LOCAL_CACHE =
             Caffeine.newBuilder().initialCapacity(1024)
@@ -156,8 +161,8 @@ public class PictureController {
         final String cacheKey = "picture:vo:" + id;
         // 尝试从本地缓存中获取
         String cacheLocalValue = LOCAL_CACHE.getIfPresent(cacheKey);
-        if (cacheLocalValue != null){
-            if (cacheLocalValue.equals("null")){
+        if (cacheLocalValue != null) {
+            if (cacheLocalValue.equals("null")) {
                 throw new BusinessException(NOT_FOUND_ERROR, "图片不存在");
             }
             PictureVO vo = JSONUtil.toBean(cacheLocalValue, PictureVO.class);
@@ -229,9 +234,22 @@ public class PictureController {
         }
         int current = pictureQuery.getCurrent();
         int size = pictureQuery.getPageSize();
-        //普通用户只能查看审核通过的图片
-        pictureQuery.setReviewStatus(PictureReviewStatus.PASS.getValue());
-        ThrowUtils.throwIf(size > 20, PARAMS_ERROR, "每页数量不能超过20");
+        // 空间权限校验
+        Long spaceId = pictureQuery.getSpaceId();
+        if (spaceId == null) {
+            //普通用户只能查看审核通过的图片
+            pictureQuery.setReviewStatus(PictureReviewStatus.PASS.getValue());
+            pictureQuery.setNullSpaceId(true);
+            ThrowUtils.throwIf(size > 20, PARAMS_ERROR, "每页数量不能超过20");
+        } else {
+            // 是私有空间
+            User loginUser = userService.getLoginUser(request);
+            Space space = spaceService.getById(spaceId);
+            ThrowUtils.throwIf(space == null, NOT_FOUND_ERROR, "空间不存在");
+            if (!loginUser.getId().equals(space.getUserId())) {
+                throw new BusinessException(NO_AUTH_ERROR, "你没有权限查看该空间下的图片，这是私人空间");
+            }
+        }
         Page<Picture> picturePage = new Page<>(current, size);
         QueryWrapper<Picture> queryWrapper = pictureService.getQueryWrapper(pictureQuery);
         //查询数据库，picturePage是页面信息，queryWrapper是查询条件
