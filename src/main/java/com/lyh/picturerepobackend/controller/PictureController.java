@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.lyh.picturerepobackend.annotation.AuthorityCheck;
+import com.lyh.picturerepobackend.api.imagesearch.ImageSearchApiFacade;
+import com.lyh.picturerepobackend.api.imagesearch.model.ImageSearchResult;
 import com.lyh.picturerepobackend.common.BaseResponse;
 import com.lyh.picturerepobackend.common.DeleteRequest;
 import com.lyh.picturerepobackend.common.ResultUtils;
@@ -320,7 +322,7 @@ public class PictureController {
 
     //redis缓存：先查询缓存，如果没有，从数据库中获取数据，再存入缓存中。
     @Deprecated
-    @PostMapping("list/page/vo/cache")
+    @PostMapping("/list/page/vo/cache")
     public BaseResponse<Page<PictureVO>> listPictureVOByPageWithCache(@RequestBody PictureQuery pictureQuery, HttpServletRequest request) {
         long current = pictureQuery.getCurrent();
         long size = pictureQuery.getPageSize();
@@ -356,7 +358,7 @@ public class PictureController {
 
     //本地缓存：先查询本地缓存，如果没有，从数据库中获取数据，再存入本地缓存中。
     @Deprecated
-    @PostMapping("list/page/vo/caffeine")
+    @PostMapping("/list/page/vo/caffeine")
     public BaseResponse<Page<PictureVO>> listPictureVOByPageWithCaffeine(@RequestBody PictureQuery pictureQuery, HttpServletRequest request) {
         long current = pictureQuery.getCurrent();
         long size = pictureQuery.getPageSize();
@@ -389,7 +391,7 @@ public class PictureController {
     }
 
     //多级缓存：先查询本地缓存，如果没有，从redis中读取数据，如果命中，则存入本地缓存再返回。如果没有命中，则从数据库中获取数据，再存入redis和本地缓存中。
-    @PostMapping("list/page/vo/multiCache")
+    @PostMapping("/list/page/vo/multiCache")
     public BaseResponse<Page<PictureVO>> listPictureVOByPageWithMultiCache(@RequestBody PictureQuery pictureQuery, HttpServletRequest request) {
         long current = pictureQuery.getCurrent();
         long size = pictureQuery.getPageSize();
@@ -431,7 +433,7 @@ public class PictureController {
 
     // 拓展：手动刷新缓存：在某些情况下，数据更新较为频繁，但自动刷新缓存机制可能存在延迟，可以通过手动刷新来解决。、
     // 提供一个刷新缓存的接口，仅管理员可调用。提供管理后台，支持管理员手动刷新指定缓存。
-    @PostMapping("list/page/manualRefresh")
+    @PostMapping("/list/page/manualRefresh")
     @AuthorityCheck(mustHaveRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> manualRefreshCache(@RequestBody PictureQuery pictureQuery, HttpServletRequest request) {
         if (pictureQuery == null) {
@@ -457,4 +459,14 @@ public class PictureController {
         return ResultUtils.success(true);
     }
 
+    @PostMapping("/search/picture")
+    public BaseResponse<List<ImageSearchResult>> searchPictureByImage(@RequestBody SearchPictureByPicture searchPictureByPicture) {
+        ThrowUtils.throwIf(searchPictureByPicture == null, ErrorCode.PARAMS_ERROR, "请求的参数为空");
+        Long pictureId = searchPictureByPicture.getPictureId();
+        ThrowUtils.throwIf(pictureId == null || pictureId <= 0, ErrorCode.PARAMS_ERROR, "图片id不能为空");
+        Picture oldPicture = pictureService.getById(pictureId);
+        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
+        List<ImageSearchResult> resultList = ImageSearchApiFacade.searchImage(oldPicture.getUrl());
+        return ResultUtils.success(resultList);
+    }
 }

@@ -10,7 +10,7 @@ import java.util.List;
  * @date 2025/4/27 21:49
  */
 @Data
-public class PictureTagCategory {
+public class PictureTagCategoryVO {
 
     /**
      * 标签列表

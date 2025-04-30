@@ -29,10 +29,10 @@ public class GetImageListApi {
      */
     public static List<ImageSearchResult> getImageList(String url) {
         try {
-            // 发起GET请求
+            // 发起GET请求（因为是json格式的内容，所以直接发起GET请求）
             HttpResponse response = HttpUtil.createGet(url).execute();
 
-            // 获取响应内容
+            // 获取响应内容（响应体就是json格式的内容）
             int statusCode = response.getStatus();
             String body = response.body();
 
@@ -55,15 +55,17 @@ public class GetImageListApi {
      * @param responseBody 接口返回的JSON字符串
      */
     private static List<ImageSearchResult> processResponse(String responseBody) {
-        // 解析响应对象
+        // 新建jsonObject对象，以解析json响应对象
         JSONObject jsonObject = new JSONObject(responseBody);
         if (!jsonObject.containsKey("data")) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "未获取到图片列表");
         }
+        // 获取data节点（json里面，后面跟着{的是节点；后面跟着[的是数组。节点用getJSONObject()，数组用getJSONArray()）
         JSONObject data = jsonObject.getJSONObject("data");
         if (!data.containsKey("list")) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "未获取到图片列表");
         }
+        // 获取list节点，list是一个json数组
         JSONArray list = data.getJSONArray("list");
         return JSONUtil.toList(list, ImageSearchResult.class);
     }

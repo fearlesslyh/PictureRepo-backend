@@ -43,7 +43,7 @@ public class GetImagePageUrlApi {
             HttpResponse httpResponse = HttpRequest.post(url)
                     .header("acs-token", RandomUtil.randomString(16))
                     .form(formData)
-                    .timeout(5000)
+                    .timeout(10000)
                     .execute();
             if (httpResponse.getStatus() != HttpStatus.HTTP_OK) {
                 throw new BusinessException(ErrorCode.OPERATION_ERROR, "接口调用失败");
