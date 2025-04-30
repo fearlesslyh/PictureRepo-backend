@@ -12,7 +12,6 @@ import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.SpaceLevelEnum;
 import com.lyh.picturerepobackend.service.SpaceService;
 import com.lyh.picturerepobackend.service.UserService;
-import org.apache.ibatis.transaction.Transaction;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;

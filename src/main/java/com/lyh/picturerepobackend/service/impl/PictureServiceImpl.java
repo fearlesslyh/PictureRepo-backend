@@ -8,8 +8,6 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.lyh.picturerepobackend.annotation.AuthorityCheck;
-import com.lyh.picturerepobackend.constant.UserConstant;
 import com.lyh.picturerepobackend.exception.BusinessException;
 import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
@@ -216,6 +214,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         Integer reviewStatus = pictureQuery.getReviewStatus();
         Long spaceId = pictureQuery.getSpaceId();
         boolean nullSpaceId = pictureQuery.isNullSpaceId();
+        Date startEditTime = pictureQuery.getStartEditTime();
+        Date endEditTime = pictureQuery.getEndEditTime();
         // 从多字段中搜索
         if (StrUtil.isNotBlank(searchText)) {
             // 需要拼接查询条件
@@ -239,6 +239,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         queryWrapper.eq(ObjUtil.isNotEmpty(reviewerId), "reviewerId", reviewerId);
         queryWrapper.eq(ObjUtil.isNotEmpty(spaceId), "spaceId", spaceId);
         queryWrapper.isNull(nullSpaceId, "spaceId");
+        queryWrapper.ge(ObjUtil.isNotEmpty(startEditTime), "editTime",  startEditTime);
+        queryWrapper.lt(ObjUtil.isNotEmpty(endEditTime), "editTime",  endEditTime);
 
         // JSON 数组查询
         if (CollUtil.isNotEmpty(tags)) {
