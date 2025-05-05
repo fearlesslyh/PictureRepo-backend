@@ -7,6 +7,7 @@ import com.lyh.picturerepobackend.model.dto.picture.*;
 import com.lyh.picturerepobackend.model.entity.Picture;
 import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.vo.PictureVO;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -57,4 +58,9 @@ public interface PictureService extends IService<Picture> {
     void deletePicture(long pictureId, User loginUser);
 
     List<PictureVO> searchPictureByColor(Long spaceId, String picColor, User loginUser);
+
+    void editPictureByBatch(PictureEditByBatch pictureEditByBatch, User loginUser);
+
+    @Transactional(rollbackFor = Exception.class)
+    void batchEditPictureMetadata(PictureEditByBatch request, Long spaceId, Long loginUserId);
 }
