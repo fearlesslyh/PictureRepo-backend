@@ -22,11 +22,13 @@
             <result property="updateTime" column="updateTime" />
             <result property="isDelete" column="isDelete" />
             <result property="thumbnailUrl" column="thumbnailUrl" />
+            <result property="picColor" column="picColor" />
+            <result property="spaceId" column="spaceId" />
     </resultMap>
 
     <sql id="Base_Column_List">
         id,url,thumbnailUrl,name,introduction,category,tags,
         picSize,picWidth,picHeight,picScale,picFormat,
-        userId,createTime,editTime,updateTime,isDelete
+        userId,createTime,editTime,updateTime,isDelete,spaceId,picColor
     </sql>
 </mapper>

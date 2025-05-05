@@ -459,7 +459,7 @@ public class PictureController {
         return ResultUtils.success(true);
     }
 
-    @PostMapping("/search/picture")
+    @PostMapping("/search/byPicture")
     public BaseResponse<List<ImageSearchResult>> searchPictureByImage(@RequestBody SearchPictureByPicture searchPictureByPicture) {
         ThrowUtils.throwIf(searchPictureByPicture == null, ErrorCode.PARAMS_ERROR, "请求的参数为空");
         Long pictureId = searchPictureByPicture.getPictureId();
@@ -468,5 +468,15 @@ public class PictureController {
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
         List<ImageSearchResult> resultList = ImageSearchApiFacade.searchImage(oldPicture.getUrl());
         return ResultUtils.success(resultList);
+    }
+
+    @PostMapping("/search/byColor")
+    public BaseResponse<List<PictureVO>> searchPictureByColor (@RequestBody SearchPictureByColor searchPictureByColor,HttpServletRequest request) {
+        ThrowUtils.throwIf(searchPictureByColor == null, ErrorCode.PARAMS_ERROR);
+        String picColor = searchPictureByColor.getPicColor();
+        Long spaceId = searchPictureByColor.getSpaceId();
+        User loginUser = userService.getLoginUser(request);
+        List<PictureVO> result = pictureService.searchPictureByColor(spaceId, picColor, loginUser);
+        return ResultUtils.success(result);
     }
 }

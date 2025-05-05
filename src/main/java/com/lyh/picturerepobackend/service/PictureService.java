@@ -9,6 +9,7 @@ import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.vo.PictureVO;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author RAOYAO
@@ -54,4 +55,6 @@ public interface PictureService extends IService<Picture> {
     void checkPictureAuthority(Picture picture, User loginUser);
 
     void deletePicture(long pictureId, User loginUser);
+
+    List<PictureVO> searchPictureByColor(Long spaceId, String picColor, User loginUser);
 }
