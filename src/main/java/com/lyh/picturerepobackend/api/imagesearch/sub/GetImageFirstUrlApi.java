@@ -1,7 +1,5 @@
 package com.lyh.picturerepobackend.api.imagesearch.sub;
 
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
 import com.lyh.picturerepobackend.exception.BusinessException;
 import com.lyh.picturerepobackend.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
@@ -10,11 +8,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
