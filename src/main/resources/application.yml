@@ -7,6 +7,7 @@ server:
       cookie:
         max-age: 2592000
 
+
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/picture
@@ -15,17 +16,15 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver  # MySQL的JDBC驱动类名
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-  profiles:
-    active: local # 默认激活 local profile，或者你可以在启动命令中指定
-  servlet:
-    multipart:
-      max-file-size: 10MB  # 设置上传文件的最大大小
   redis:
     database: 0
     host: 127.0.0.1
     port: 6379
     connect-timeout: 10000
+    password: 123456
   session:
+    store-type: redis
+    # session 30天过期
     timeout: 2592000
 
 logging:
@@ -53,3 +52,16 @@ knife4j:
         group-name: 梁懿豪
         api-rule: package
         api-rule-resources: com.lyh.picturerepobackend.controller
+
+
+cos:
+  # 腾讯云 COS 存储桶域名
+  host: ${cos.picture.host}
+  # 腾讯云 COS 存储桶名称
+  bucketName: ${cos.picture.bucketName}
+  # 腾讯云 COS 存储桶地域
+  region: ${cos.picture.region}
+  # 腾讯云 COS SecretId
+  secretId: ${cos.picture.secretId}
+  # 腾讯云 COS SecretKey
+  secretKey: ${cos.picture.secretKey}
