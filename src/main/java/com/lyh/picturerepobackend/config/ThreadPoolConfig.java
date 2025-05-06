@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ThreadPoolConfig {
 
     @Bean
-    public ThreadPoolExecutor customExecutor() {
+    public ThreadPoolExecutor threadPoolExecutor() {
         // 创建线程工厂
         ThreadFactory threadFactory = new ThreadFactory() {
             private final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -40,4 +40,4 @@ public class ThreadPoolConfig {
                 new ThreadPoolExecutor.CallerRunsPolicy()  // 拒绝策略
         );
     }
-} 
+}
