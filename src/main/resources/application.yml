@@ -7,7 +7,6 @@ server:
       cookie:
         max-age: 2592000
 
-
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/picture
@@ -26,6 +25,8 @@ spring:
     store-type: redis
     # session 30天过期
     timeout: 2592000
+  profiles:
+    active: local
 
 logging:
   level:
@@ -52,3 +53,11 @@ knife4j:
         group-name: 梁懿豪
         api-rule: package
         api-rule-resources: com.lyh.picturerepobackend.controller
+
+cos:
+  host: ${cos.picture.host}
+  bucketName: ${cos.picture.bucketName}
+  secretId: ${cos.picture.secretId}
+  secretKey: ${cos.picture.secretKey}
+  region: ${cos.picture.region}
+

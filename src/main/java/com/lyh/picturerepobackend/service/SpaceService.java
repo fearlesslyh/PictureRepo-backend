@@ -18,4 +18,5 @@ public interface SpaceService extends IService<Space> {
 
     long addSpace(SpaceAdd spaceAdd, User loginUser);
 
+    void checkSpaceAuth(User loginUser, Space space);
 }

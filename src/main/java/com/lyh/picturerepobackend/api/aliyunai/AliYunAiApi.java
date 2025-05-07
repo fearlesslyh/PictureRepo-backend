@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AliYunAiApi {
     // 读取配置文件
-    @Value("${aliYunAi.apiKey}")
+    @Value("${aliYunAi.accessKey}")
     private String apiKey;
 
     // 创建任务地址

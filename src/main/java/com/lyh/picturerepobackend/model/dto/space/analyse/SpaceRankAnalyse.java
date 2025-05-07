@@ -1,5 +1,7 @@
 package com.lyh.picturerepobackend.model.dto.space.analyse;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
@@ -7,6 +9,7 @@ import java.io.Serializable;
  * @version 1.0
  * @date 2025/4/27 21:43
  */
+@Data
 public class SpaceRankAnalyse implements Serializable {
     /**
      * 排名前 N 的空间
