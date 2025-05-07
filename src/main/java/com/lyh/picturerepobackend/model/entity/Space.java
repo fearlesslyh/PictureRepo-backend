@@ -79,6 +79,11 @@ public class Space implements Serializable {
      */
     private Long spaceId;
 
+    /**
+     * 空间类型：0-私有 1-团队
+     */
+    private Integer spaceType;
+
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
