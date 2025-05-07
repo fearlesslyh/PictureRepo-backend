@@ -107,7 +107,8 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space>
                 .groupBy("category");
 
         // 查询并转换结果
-        return pictureService.getBaseMapper().selectMaps(queryWrapper)
+        return pictureService.getBaseMapper()
+                .selectMaps(queryWrapper)
                 .stream()
                 .map(result -> {
                     String category = (String) result.get("category");
