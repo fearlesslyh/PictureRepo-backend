@@ -52,16 +52,3 @@ knife4j:
         group-name: 梁懿豪
         api-rule: package
         api-rule-resources: com.lyh.picturerepobackend.controller
-
-
-cos:
-  # 腾讯云 COS 存储桶域名
-  host: ${cos.picture.host}
-  # 腾讯云 COS 存储桶名称
-  bucketName: ${cos.picture.bucketName}
-  # 腾讯云 COS 存储桶地域
-  region: ${cos.picture.region}
-  # 腾讯云 COS SecretId
-  secretId: ${cos.picture.secretId}
-  # 腾讯云 COS SecretKey
-  secretKey: ${cos.picture.secretKey}

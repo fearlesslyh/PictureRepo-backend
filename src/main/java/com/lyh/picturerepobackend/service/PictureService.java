@@ -3,6 +3,8 @@ package com.lyh.picturerepobackend.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lyh.picturerepobackend.api.aliyunai.model.CreateOutPaintingTaskRequest;
+import com.lyh.picturerepobackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.lyh.picturerepobackend.model.dto.picture.*;
 import com.lyh.picturerepobackend.model.entity.Picture;
 import com.lyh.picturerepobackend.model.entity.User;
@@ -63,4 +65,6 @@ public interface PictureService extends IService<Picture> {
 
     @Transactional(rollbackFor = Exception.class)
     void batchEditPictureMetadata(PictureEditByBatch request, Long spaceId, Long loginUserId);
+
+    CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTask createPictureOutPaintingTask, User loginUser);
 }
