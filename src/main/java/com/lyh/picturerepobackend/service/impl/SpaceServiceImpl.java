@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.picturerepobackend.exception.BusinessException;
 import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
+import com.lyh.picturerepobackend.manager.sharding.DynamicShardingManager;
 import com.lyh.picturerepobackend.mapper.SpaceMapper;
 import com.lyh.picturerepobackend.model.dto.space.SpaceAdd;
 import com.lyh.picturerepobackend.model.dto.space.SpaceQuery;
@@ -26,6 +27,7 @@ import com.lyh.picturerepobackend.service.UserService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -56,6 +58,9 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     private TransactionTemplate transactionTemplate;
     @Resource
     private SpaceUserService spaceUserService;
+    @Resource
+    @Lazy
+    private DynamicShardingManager dynamicShardingManager;
 
     @Override
     public void validSpace(Space space, boolean add) {
@@ -176,8 +181,8 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
                             result = spaceUserService.save(spaceUser);
                             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "创建团队成员记录失败");
                         }
-//                // 创建分表（仅对团队空间生效）为方便部署，暂时不使用
-//                dynamicShardingManager.createSpacePictureTable(space);
+                        // 创建分表（仅对团队空间生效）为方便部署，暂时不使用
+                        dynamicShardingManager.createSpacePictureTable(space);
                         // 返回新写入的数据 id
                         return space.getId();
                     });

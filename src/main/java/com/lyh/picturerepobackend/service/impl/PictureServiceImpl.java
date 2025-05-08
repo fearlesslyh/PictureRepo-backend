@@ -32,6 +32,7 @@ import com.lyh.picturerepobackend.service.PictureService;
 import com.lyh.picturerepobackend.service.SpaceService;
 import com.lyh.picturerepobackend.service.UserService;
 import com.lyh.picturerepobackend.utils.ColorSimilarUtils;
+import groovy.lang.Lazy;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -81,6 +82,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
     private CosManager cosManager;
 
     @Resource
+    @Lazy
     private SpaceService spaceService;
 
     @Resource

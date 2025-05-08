@@ -39,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.DigestUtils;
@@ -76,6 +77,7 @@ public class PictureController {
     private RedissonClient redissonClient;
 
     @Resource
+    @Lazy
     private SpaceService spaceService;
 
     @Resource
