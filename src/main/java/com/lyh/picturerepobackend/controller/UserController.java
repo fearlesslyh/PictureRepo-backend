@@ -7,6 +7,7 @@ import com.lyh.picturerepobackend.common.DeleteRequest;
 import com.lyh.picturerepobackend.common.ResultUtils;
 import com.lyh.picturerepobackend.constant.UserConstant;
 import com.lyh.picturerepobackend.exception.BusinessException;
+import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
 import com.lyh.picturerepobackend.model.dto.user.*;
 import com.lyh.picturerepobackend.model.entity.User;

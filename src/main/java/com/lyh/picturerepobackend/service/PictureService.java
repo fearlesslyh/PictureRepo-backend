@@ -54,7 +54,7 @@ public interface PictureService extends IService<Picture> {
 
     void clearPictureFile(Picture picture);
 
-    void checkPictureAuthority(Picture picture, User loginUser);
+//    void checkPictureAuthority(Picture picture, User loginUser);
 
     void deletePicture(long pictureId, User loginUser);
 

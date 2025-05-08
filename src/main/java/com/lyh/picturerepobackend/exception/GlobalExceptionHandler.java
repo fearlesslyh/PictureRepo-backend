@@ -1,5 +1,7 @@
 package com.lyh.picturerepobackend.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
 import com.lyh.picturerepobackend.common.BaseResponse;
 import com.lyh.picturerepobackend.common.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -31,4 +33,16 @@ public class GlobalExceptionHandler {
         // 返回错误信息
         return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "系统错误");
     }
+    @ExceptionHandler(NotLoginException.class)
+    public BaseResponse<?> notLoginException(NotLoginException e) {
+        log.error("NotLoginException", e);
+        return ResultUtils.error(ErrorCode.NOT_LOGIN_ERROR,"未登录");
+    }
+
+    @ExceptionHandler(NotPermissionException.class)
+    public BaseResponse<?> notPermissionExceptionHandler(NotPermissionException e) {
+        log.error("NotPermissionException", e);
+        return ResultUtils.error(ErrorCode.NO_AUTH_ERROR,"没有权限");
+    }
+
 }

@@ -22,6 +22,10 @@ import com.lyh.picturerepobackend.exception.BusinessException;
 import com.lyh.picturerepobackend.exception.ErrorCode;
 import com.lyh.picturerepobackend.exception.ThrowUtils;
 import com.lyh.picturerepobackend.manager.CosManager;
+import com.lyh.picturerepobackend.manager.auth.SpaceUserAuthManager;
+import com.lyh.picturerepobackend.manager.auth.StpKit;
+import com.lyh.picturerepobackend.manager.auth.annotation.SaSpaceCheckPermission;
+import com.lyh.picturerepobackend.manager.auth.model.SpaceUserPermissionConstant;
 import com.lyh.picturerepobackend.model.dto.picture.*;
 import com.lyh.picturerepobackend.model.entity.Picture;
 import com.lyh.picturerepobackend.model.entity.Space;
@@ -76,6 +80,9 @@ public class PictureController {
 
     @Resource
     private AliYunAiApi aliYunAiApi;
+
+    @Resource
+    private SpaceUserAuthManager spaceUserAuthManager;
     private final Cache<String, String> LOCAL_CACHE =
             Caffeine.newBuilder().initialCapacity(1024)
                     .maximumSize(10000L)
@@ -84,6 +91,7 @@ public class PictureController {
                     .build();
 
     @PostMapping("/upload/localFile")
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResponse<PictureVO> uploadPictureByLocalFile(@RequestPart("file") MultipartFile file, PictureUpload pictureUpload, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         // 2.  打印日志，方便调试
@@ -95,6 +103,7 @@ public class PictureController {
     }
 
     @PostMapping("/upload/urlFile")
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResponse<PictureVO> uploadPictureByUrlFile(@RequestBody PictureUpload pictureUpload, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         String fileUrl = pictureUpload.getUrl();
@@ -103,6 +112,7 @@ public class PictureController {
     }
 
     @PostMapping("/delete")
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_DELETE)
     public BaseResponse<Boolean> deletePicture(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() < 0) {
             throw new BusinessException(PARAMS_ERROR, "请求的参数为空或id为空");
@@ -115,6 +125,7 @@ public class PictureController {
 
     //更新步骤：1.dto转换 2.校验数据 3.补充审核状态 4.操作数据库
     @PostMapping("/update")
+
     public BaseResponse<Boolean> updatePicture(@RequestBody PictureUpdate pictureUpdate, HttpServletRequest request) {
         if (pictureUpdate == null || pictureUpdate.getId() < 0) {
             throw new BusinessException(PARAMS_ERROR, "请求的参数为空或id为空");
@@ -161,10 +172,8 @@ public class PictureController {
     //
     //其他线程会等待锁释放，然后直接从缓存中读取数据，避免了缓存击穿。
     @GetMapping("/get/VO")
-    public BaseResponse<PictureVO> getPictureVO(Long id, HttpServletRequest request) {
-        if (id == null) {
-            throw new BusinessException(PARAMS_ERROR, "id不能为空");
-        }
+    public BaseResponse<PictureVO> getPictureVO(long id, HttpServletRequest request) {
+        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR, "id不能为空");
         final String cacheKey = "picture:vo:" + id;
         // 尝试从本地缓存中获取
         String cacheLocalValue = LOCAL_CACHE.getIfPresent(cacheKey);
@@ -184,12 +193,13 @@ public class PictureController {
             return ResultUtils.success(JSONUtil.toBean(cacheRedisValue, PictureVO.class));
         }
         // 如果redis缓存没有数据，尝试获取分布式锁
+        Picture picture = pictureService.getById(id);
         RLock lock = redissonClient.getLock("lock:" + cacheKey); // 使用 Redisson 锁
         try {
             // 尝试获取锁，如果获取不到，会等待7秒
+            Space space = null;
             if (lock.tryLock(7, TimeUnit.SECONDS)) {
                 // 从数据库查询
-                Picture picture = pictureService.getById(id);
                 if (picture == null) {
                     ValueOperations<String, String> valuesOps = stringRedisTemplate.opsForValue();
                     // 设置缓存空对象，避免缓存穿透
@@ -201,23 +211,25 @@ public class PictureController {
                 Long spaceId = picture.getSpaceId();
                 if (spaceId != null) {
                     // 检查空间权限
-                    User loginUser = userService.getLoginUser(request);
-                    pictureService.checkPictureAuthority(picture, loginUser);
+//                    pictureService.checkPictureAuthority(picture, loginUser);
+                    boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
+                    ThrowUtils.throwIf(!hasPermission, ErrorCode.NO_AUTH_ERROR, "没有权限");
+                    space = spaceService.getById(spaceId);
+                    ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
                 }
-                // 数据库查询数据成功，设置redis和本地缓存的数据
-                PictureVO pictureVO = pictureService.getPictureVO(picture, request);
-                ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
-                valueOperations.set(cacheKey, JSONUtil.toJsonStr(pictureVO), 1, TimeUnit.HOURS);// 缓存一小时
-                LOCAL_CACHE.put(cacheKey, JSONUtil.toJsonStr(pictureVO));
-                return ResultUtils.success(pictureVO);
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new BusinessException(OPERATION_ERROR, "获取锁失败");
-        } finally {
-            lock.unlock();
+            // 数据库查询数据成功，设置redis和本地缓存的数据
+            User loginUser = userService.getLoginUser(request);
+            List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+            PictureVO pictureVO = pictureService.getPictureVO(picture, request);
+            pictureVO.setPermissionList(permissionList);
+            ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
+            valueOperations.set(cacheKey, JSONUtil.toJsonStr(pictureVO), 1, TimeUnit.HOURS);// 缓存一小时
+            LOCAL_CACHE.put(cacheKey, JSONUtil.toJsonStr(pictureVO));
+            return ResultUtils.success(pictureVO);
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
         }
-        return null;
     }
 
     @GetMapping("/list/page")
@@ -241,21 +253,18 @@ public class PictureController {
         }
         int current = pictureQuery.getCurrent();
         int size = pictureQuery.getPageSize();
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 20, PARAMS_ERROR, "每页数量不能超过20");
         // 空间权限校验
         Long spaceId = pictureQuery.getSpaceId();
         if (spaceId == null) {
             //普通用户只能查看审核通过的图片
             pictureQuery.setReviewStatus(PictureReviewStatus.PASS.getValue());
             pictureQuery.setNullSpaceId(true);
-            ThrowUtils.throwIf(size > 20, PARAMS_ERROR, "每页数量不能超过20");
         } else {
             // 是私有空间
-            User loginUser = userService.getLoginUser(request);
-            Space space = spaceService.getById(spaceId);
-            ThrowUtils.throwIf(space == null, NOT_FOUND_ERROR, "空间不存在");
-            if (!loginUser.getId().equals(space.getUserId())) {
-                throw new BusinessException(NO_AUTH_ERROR, "你没有权限查看该空间下的图片，这是私人空间");
-            }
+            boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
+            ThrowUtils.throwIf(!hasPermission, ErrorCode.NO_AUTH_ERROR, "没有权限");
         }
         Page<Picture> picturePage = new Page<>(current, size);
         QueryWrapper<Picture> queryWrapper = pictureService.getQueryWrapper(pictureQuery);
@@ -266,6 +275,7 @@ public class PictureController {
     }
 
     @PostMapping("/edit")
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_EDIT)
     public BaseResponse<Boolean> editPicture(@RequestBody PictureEdit pictureEdit, HttpServletRequest request) {
         if (pictureEdit == null || pictureEdit.getId() < 0) {
             throw new BusinessException(PARAMS_ERROR, "请求的参数为空或id为空");
@@ -477,7 +487,8 @@ public class PictureController {
     }
 
     @PostMapping("/search/byColor")
-    public BaseResponse<List<PictureVO>> searchPictureByColor (@RequestBody SearchPictureByColor searchPictureByColor,HttpServletRequest request) {
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_VIEW)
+    public BaseResponse<List<PictureVO>> searchPictureByColor(@RequestBody SearchPictureByColor searchPictureByColor, HttpServletRequest request) {
         ThrowUtils.throwIf(searchPictureByColor == null, ErrorCode.PARAMS_ERROR);
         String picColor = searchPictureByColor.getPicColor();
         Long spaceId = searchPictureByColor.getSpaceId();
@@ -485,7 +496,9 @@ public class PictureController {
         List<PictureVO> result = pictureService.searchPictureByColor(spaceId, picColor, loginUser);
         return ResultUtils.success(result);
     }
+
     @PostMapping("/edit/batch")
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_EDIT)
     public BaseResponse<Boolean> editPictureByBatch(@RequestBody PictureEditByBatch pictureEditByBatch, HttpServletRequest request) {
         ThrowUtils.throwIf(pictureEditByBatch == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
@@ -497,6 +510,7 @@ public class PictureController {
      * 创建 AI 扩图任务
      */
     @PostMapping("/out_painting/create_task")
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_EDIT)
     public BaseResponse<CreateOutPaintingTaskResponse> createPictureOutPaintingTask(
             @RequestBody CreatePictureOutPaintingTask createPictureOutPaintingTaskRequest,
             HttpServletRequest request) {

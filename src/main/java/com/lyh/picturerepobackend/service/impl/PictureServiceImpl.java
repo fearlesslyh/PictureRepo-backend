@@ -104,9 +104,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
             Space space = spaceService.getById(spaceId);
             ThrowUtils.throwIf(space == null, NOT_FOUND_ERROR, "空间不存在");
             // 必须是本人或管理员才可上传
-            if (!loginUser.getId().equals(space.getUserId())) {
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "没有权限上传图片");
-            }
+//            if (!loginUser.getId().equals(space.getUserId())) {
+//                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "没有权限上传图片");
+//            }
             // 校验额度
             if (space.getTotalCount() >= space.getMaxCount()) {
                 throw new BusinessException(ErrorCode.OPERATION_ERROR, "空间图片数量已满，已达最大上限");
@@ -129,10 +129,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         if (pictureId != null) {
             Picture oldPicture = this.getById(pictureId);
             ThrowUtils.throwIf(oldPicture == null, NOT_FOUND_ERROR, "图片不存在");
-            // 仅本人或管理员才可更新
-            if (!oldPicture.getUserId().equals(loginUser.getId()) && userService.isAdmin(loginUser)) {
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "没有权限更新图片");
-            }
+//            // 仅本人或管理员才可更新
+//            if (!oldPicture.getUserId().equals(loginUser.getId()) && userService.isAdmin(loginUser)) {
+//                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "没有权限更新图片");
+//            }
             // 校验空间id是否一致
             // 如果没有spaceId，则使用原来的id
             if (spaceId == null) {
@@ -399,7 +399,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         Picture oldPicture = this.getById(id);
         ThrowUtils.throwIf(oldPicture == null, NOT_FOUND_ERROR, "图片不存在");
         // 校验权限
-        this.checkPictureAuthority(oldPicture, loginUser);
+//        this.checkPictureAuthority(oldPicture, loginUser);
         // 补充审核状态
         this.setReviewStatus(picture, loginUser);
         boolean result = this.updateById(picture);
@@ -534,23 +534,23 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         }
     }
 
-    @Override
-    // picture是要进行修改的图片，loginUser是当前登录用户
-    public void checkPictureAuthority(Picture picture, User loginUser) {
-        Long userId = loginUser.getId();
-        Long spaceId = picture.getSpaceId();
-        if (spaceId == null) {
-            // 说明是公共空间，只有本人或管理员可以修改
-            if (!userService.isAdmin(loginUser) && !userId.equals(picture.getUserId())) {
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "你没有权限修改图片，这是公共空间，只有本人或管理员才可以修改");
-            }
-        } else {
-            // 说明是私有空间，只有空间创建者才可以修改
-            if (!userId.equals(picture.getUserId())) {
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "你没有权限修改图片，这是私有空间，只有本人才可以修改");
-            }
-        }
-    }
+//    @Override
+//    // picture是要进行修改的图片，loginUser是当前登录用户
+//    public void checkPictureAuthority(Picture picture, User loginUser) {
+//        Long userId = loginUser.getId();
+//        Long spaceId = picture.getSpaceId();
+//        if (spaceId == null) {
+//            // 说明是公共空间，只有本人或管理员可以修改
+//            if (!userService.isAdmin(loginUser) && !userId.equals(picture.getUserId())) {
+//                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "你没有权限修改图片，这是公共空间，只有本人或管理员才可以修改");
+//            }
+//        } else {
+//            // 说明是私有空间，只有空间创建者才可以修改
+//            if (!userId.equals(picture.getUserId())) {
+//                throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "你没有权限修改图片，这是私有空间，只有本人才可以修改");
+//            }
+//        }
+//    }
 
     @Override
     public void deletePicture(long pictureId, User loginUser) {
@@ -560,7 +560,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         Picture picture = this.getById(pictureId);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
         // 校验权限
-        this.checkPictureAuthority(picture, loginUser);
+//        this.checkPictureAuthority(picture, loginUser);
         // 开启事务
         transactionTemplate.execute(status -> {
             // 删除图片
@@ -752,7 +752,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
                         new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图片不存在")
                 );
         // 权限校验
-        checkPictureAuthority(picture, loginUser);
+//        checkPictureAuthority(picture, loginUser);
         // 构造请求参数
         CreateOutPaintingTaskRequest taskRequest = new CreateOutPaintingTaskRequest();
         CreateOutPaintingTaskRequest.Input input = new CreateOutPaintingTaskRequest.Input();
