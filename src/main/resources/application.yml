@@ -89,3 +89,5 @@ cos:
   secretKey: ${cos.picture.secretKey}
   region: ${cos.picture.region}
 
+aliYunAi:
+  accessKey: ${aliYunAi.accessKeyId}
