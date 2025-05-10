@@ -1,10 +1,10 @@
 package com.lyh.picturerepobackend.manager.sharding;
 
 import com.baomidou.mybatisplus.extension.toolkit.SqlRunner;
-import com.lyh.picturerepobackend.model.entity.Space;
-import com.lyh.picturerepobackend.model.enums.SpaceLevelEnum;
-import com.lyh.picturerepobackend.model.enums.SpaceTypeEnum;
-import com.lyh.picturerepobackend.service.SpaceService;
+import com.lyh.picturerepo.domain.space.entity.Space;
+import com.lyh.picturerepo.domain.space.valueObject.SpaceLevelEnum;
+import com.lyh.picturerepo.domain.space.valueObject.SpaceTypeEnum;
+import com.lyh.picturerepo.application.service.SpaceService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.driver.jdbc.core.connection.ShardingSphereConnection;
 import org.apache.shardingsphere.infra.metadata.database.rule.ShardingSphereRuleMetaData;

@@ -8,11 +8,11 @@ import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepobackend.manager.auth.model.SpaceUserAuthConfig;
 import com.lyh.picturerepobackend.manager.auth.model.SpaceUserPermissionConstant;
 import com.lyh.picturerepobackend.manager.auth.model.SpaceUserRole;
-import com.lyh.picturerepobackend.model.entity.Space;
-import com.lyh.picturerepobackend.model.entity.SpaceUser;
-import com.lyh.picturerepobackend.model.enums.SpaceRoleEnum;
-import com.lyh.picturerepobackend.model.enums.SpaceTypeEnum;
-import com.lyh.picturerepobackend.service.SpaceUserService;
+import com.lyh.picturerepo.domain.space.entity.Space;
+import com.lyh.picturerepo.domain.space.entity.SpaceUser;
+import com.lyh.picturerepo.domain.space.valueObject.SpaceRoleEnum;
+import com.lyh.picturerepo.domain.space.valueObject.SpaceTypeEnum;
+import com.lyh.picturerepo.application.service.SpaceUserApplicationService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -30,7 +30,7 @@ public class SpaceUserAuthManager {
     private UserApplicationService userApplicationService;
 
     @Resource
-    private SpaceUserService spaceUserService;
+    private SpaceUserApplicationService spaceUserApplicationService;
 
     public static final SpaceUserAuthConfig SPACE_USER_AUTH_CONFIG;
 
@@ -96,7 +96,7 @@ public class SpaceUserAuthManager {
                 }
             case TEAM:
                 // 团队空间，查询 SpaceUser 并获取角色和权限
-                SpaceUser spaceUser = spaceUserService.lambdaQuery()
+                SpaceUser spaceUser = spaceUserApplicationService.lambdaQuery()
                         .eq(SpaceUser::getSpaceId, space.getId())
                         .eq(SpaceUser::getUserId, loginUser.getId())
                         .one();

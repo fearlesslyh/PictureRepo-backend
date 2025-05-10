@@ -7,10 +7,11 @@ import com.lyh.picturerepo.infrastructure.common.BaseResponse;
 import com.lyh.picturerepo.infrastructure.common.ResultUtils;
 import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
 import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
-import com.lyh.picturerepobackend.model.dto.space.analyse.*;
-import com.lyh.picturerepobackend.model.entity.Space;
-import com.lyh.picturerepobackend.model.vo.space.analyse.*;
-import com.lyh.picturerepobackend.service.SpaceAnalyzeService;
+import com.lyh.picturerepo.interfaces.dto.space.analyse.*;
+import com.lyh.picturerepo.interfaces.vo.space.analyse.*;
+import com.lyh.picturerepo.domain.space.entity.Space;
+import com.lyh.picturerepo.interfaces.vo.analyse.*;
+import com.lyh.picturerepo.application.service.SpaceAnalyzeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -110,7 +111,7 @@ public class SpaceAnalyzeController {
      */
     @PostMapping("/user")
     public BaseResponse<List<SpaceUserResponse>> getSpaceUserAnalyze(@RequestBody SpaceUserAnalyse spaceUserAnalyzeRequest,
-                                                                            HttpServletRequest request) {
+                                                                     HttpServletRequest request) {
         ThrowUtils.throwIf(spaceUserAnalyzeRequest == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userApplicationService.getLoginUser(request);
         List<SpaceUserResponse> resultList = spaceAnalyzeService.getSpaceUserAnalyze(spaceUserAnalyzeRequest, loginUser);

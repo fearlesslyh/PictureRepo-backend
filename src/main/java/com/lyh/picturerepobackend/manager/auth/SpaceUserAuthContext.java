@@ -1,8 +1,8 @@
 package com.lyh.picturerepobackend.manager.auth;
 
 import com.lyh.picturerepo.domain.picture.entity.Picture;
-import com.lyh.picturerepobackend.model.entity.Space;
-import com.lyh.picturerepobackend.model.entity.SpaceUser;
+import com.lyh.picturerepo.domain.space.entity.Space;
+import com.lyh.picturerepo.domain.space.entity.SpaceUser;
 import lombok.Data;
 
 /**

@@ -11,12 +11,12 @@ import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
 import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
 import com.lyh.picturerepobackend.manager.auth.annotation.SaSpaceCheckPermission;
 import com.lyh.picturerepobackend.manager.auth.model.SpaceUserPermissionConstant;
-import com.lyh.picturerepobackend.model.dto.spaceuser.SpaceUserAddRequest;
-import com.lyh.picturerepobackend.model.dto.spaceuser.SpaceUserEditRequest;
-import com.lyh.picturerepobackend.model.dto.spaceuser.SpaceUserQueryRequest;
-import com.lyh.picturerepobackend.model.entity.SpaceUser;
-import com.lyh.picturerepobackend.model.vo.SpaceUserVO;
-import com.lyh.picturerepobackend.service.SpaceUserService;
+import com.lyh.picturerepo.interfaces.dto.spaceuser.SpaceUserAddRequest;
+import com.lyh.picturerepo.interfaces.dto.spaceuser.SpaceUserEditRequest;
+import com.lyh.picturerepo.interfaces.dto.spaceuser.SpaceUserQueryRequest;
+import com.lyh.picturerepo.domain.space.entity.SpaceUser;
+import com.lyh.picturerepo.interfaces.vo.space.SpaceUserVO;
+import com.lyh.picturerepo.application.service.SpaceUserApplicationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,7 +37,7 @@ import java.util.List;
 public class SpaceUserController {
 
     @Resource
-    private SpaceUserService spaceUserService;
+    private SpaceUserApplicationService spaceUserApplicationService;
 
     @Resource
     private UserApplicationService userApplicationService;
@@ -49,7 +49,7 @@ public class SpaceUserController {
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.SPACE_USER_MANAGE)
     public BaseResponse<Long> addSpaceUser(@RequestBody SpaceUserAddRequest spaceUserAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(spaceUserAddRequest == null, ErrorCode.PARAMS_ERROR);
-        long id = spaceUserService.addSpaceUser(spaceUserAddRequest);
+        long id = spaceUserApplicationService.addSpaceUser(spaceUserAddRequest);
         return ResultUtils.success(id);
     }
 
@@ -65,10 +65,10 @@ public class SpaceUserController {
         }
         long id = deleteRequest.getId();
         // 判断是否存在
-        SpaceUser oldSpaceUser = spaceUserService.getById(id);
+        SpaceUser oldSpaceUser = spaceUserApplicationService.getById(id);
         ThrowUtils.throwIf(oldSpaceUser == null, ErrorCode.NOT_FOUND_ERROR);
         // 操作数据库
-        boolean result = spaceUserService.removeById(id);
+        boolean result = spaceUserApplicationService.removeById(id);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
@@ -85,7 +85,7 @@ public class SpaceUserController {
         Long userId = spaceUserQueryRequest.getUserId();
         ThrowUtils.throwIf(ObjectUtil.hasEmpty(spaceId, userId), ErrorCode.PARAMS_ERROR);
         // 查询数据库
-        SpaceUser spaceUser = spaceUserService.getOne(spaceUserService.getQueryWrapper(spaceUserQueryRequest));
+        SpaceUser spaceUser = spaceUserApplicationService.getOne(spaceUserApplicationService.getQueryWrapper(spaceUserQueryRequest));
         ThrowUtils.throwIf(spaceUser == null, ErrorCode.NOT_FOUND_ERROR);
         return ResultUtils.success(spaceUser);
     }
@@ -98,10 +98,10 @@ public class SpaceUserController {
     public BaseResponse<List<SpaceUserVO>> listSpaceUser(@RequestBody SpaceUserQueryRequest spaceUserQueryRequest,
                                                          HttpServletRequest request) {
         ThrowUtils.throwIf(spaceUserQueryRequest == null, ErrorCode.PARAMS_ERROR);
-        List<SpaceUser> spaceUserList = spaceUserService.list(
-                spaceUserService.getQueryWrapper(spaceUserQueryRequest)
+        List<SpaceUser> spaceUserList = spaceUserApplicationService.list(
+                spaceUserApplicationService.getQueryWrapper(spaceUserQueryRequest)
         );
-        return ResultUtils.success(spaceUserService.getSpaceUserVOList(spaceUserList));
+        return ResultUtils.success(spaceUserApplicationService.getSpaceUserVOList(spaceUserList));
     }
 
     /**
@@ -118,13 +118,13 @@ public class SpaceUserController {
         SpaceUser spaceUser = new SpaceUser();
         BeanUtils.copyProperties(spaceUserEditRequest, spaceUser);
         // 数据校验
-        spaceUserService.validSpaceUser(spaceUser, false);
+        spaceUserApplicationService.validSpaceUser(spaceUser, false);
         // 判断是否存在
         long id = spaceUserEditRequest.getId();
-        SpaceUser oldSpaceUser = spaceUserService.getById(id);
+        SpaceUser oldSpaceUser = spaceUserApplicationService.getById(id);
         ThrowUtils.throwIf(oldSpaceUser == null, ErrorCode.NOT_FOUND_ERROR);
         // 操作数据库
-        boolean result = spaceUserService.updateById(spaceUser);
+        boolean result = spaceUserApplicationService.updateById(spaceUser);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
@@ -137,9 +137,9 @@ public class SpaceUserController {
         User loginUser = userApplicationService.getLoginUser(request);
         SpaceUserQueryRequest spaceUserQueryRequest = new SpaceUserQueryRequest();
         spaceUserQueryRequest.setUserId(loginUser.getId());
-        List<SpaceUser> spaceUserList = spaceUserService.list(
-                spaceUserService.getQueryWrapper(spaceUserQueryRequest)
+        List<SpaceUser> spaceUserList = spaceUserApplicationService.list(
+                spaceUserApplicationService.getQueryWrapper(spaceUserQueryRequest)
         );
-        return ResultUtils.success(spaceUserService.getSpaceUserVOList(spaceUserList));
+        return ResultUtils.success(spaceUserApplicationService.getSpaceUserVOList(spaceUserList));
     }
 }

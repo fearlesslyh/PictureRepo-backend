@@ -1,61 +1,30 @@
 package com.lyh.picturerepo.application.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjUtil;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.picturerepo.application.service.UserApplicationService;
 import com.lyh.picturerepo.domain.picture.service.PictureDomainService;
 import com.lyh.picturerepo.domain.user.entity.User;
-import com.lyh.picturerepo.infrastructure.api.CosManager;
 import com.lyh.picturerepo.infrastructure.api.aliyunai.AliYunAiApi;
-import com.lyh.picturerepo.infrastructure.api.aliyunai.model.CreateOutPaintingTaskRequest;
 import com.lyh.picturerepo.infrastructure.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.lyh.picturerepo.infrastructure.exception.BusinessException;
-import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
-import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
 import com.lyh.picturerepo.infrastructure.mapper.PictureMapper;
-import com.lyh.picturerepo.infrastructure.utils.ColorSimilarUtils;
 import com.lyh.picturerepo.interfaces.dto.picture.*;
 import com.lyh.picturerepo.interfaces.vo.user.UserVO;
-import com.lyh.picturerepobackend.manager.upload.LocalFilePictureUpload;
-import com.lyh.picturerepobackend.manager.upload.PictureUploadTemplate;
-import com.lyh.picturerepobackend.manager.upload.UrlFilePictureUpload;
-import com.lyh.picturerepobackend.model.dto.file.FileUpload;
 import com.lyh.picturerepo.domain.picture.entity.Picture;
-import com.lyh.picturerepobackend.model.entity.Space;
-import com.lyh.picturerepo.domain.picture.valueObject.PictureReviewStatus;
 import com.lyh.picturerepo.interfaces.vo.picture.PictureVO;
 import com.lyh.picturerepo.application.service.PictureApplicationService;
-import com.lyh.picturerepobackend.service.SpaceService;
-import groovy.lang.Lazy;
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.awt.*;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import static com.lyh.picturerepo.infrastructure.exception.ErrorCode.*;
@@ -70,9 +39,6 @@ import static com.lyh.picturerepo.infrastructure.exception.ErrorCode.*;
 public class PictureApplicationServiceImpl extends ServiceImpl<PictureMapper, Picture> implements PictureApplicationService {
     @Resource
     private UserApplicationService userApplicationService;
-
-    @Resource
-    private AliYunAiApi aliYunAiApi;
 
     @Resource
     private PictureDomainService pictureDomainService;
