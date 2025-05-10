@@ -10,19 +10,19 @@ import cn.hutool.extra.servlet.ServletUtil;
 import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
 import cn.hutool.json.JSONUtil;
-import com.lyh.picturerepobackend.exception.BusinessException;
-import com.lyh.picturerepobackend.exception.ErrorCode;
+import com.lyh.picturerepo.application.service.PictureApplicationService;
+import com.lyh.picturerepo.application.service.UserApplicationService;
+import com.lyh.picturerepo.domain.user.entity.User;
+import com.lyh.picturerepo.infrastructure.exception.BusinessException;
+import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
 import com.lyh.picturerepobackend.manager.auth.model.SpaceUserPermissionConstant;
-import com.lyh.picturerepobackend.model.entity.Picture;
+import com.lyh.picturerepo.domain.picture.entity.Picture;
 import com.lyh.picturerepobackend.model.entity.Space;
 import com.lyh.picturerepobackend.model.entity.SpaceUser;
-import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.SpaceRoleEnum;
 import com.lyh.picturerepobackend.model.enums.SpaceTypeEnum;
-import com.lyh.picturerepobackend.service.PictureService;
 import com.lyh.picturerepobackend.service.SpaceService;
 import com.lyh.picturerepobackend.service.SpaceUserService;
-import com.lyh.picturerepobackend.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -32,7 +32,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
-import static com.lyh.picturerepobackend.constant.UserConstant.USER_LOGIN_STATE;
+import static com.lyh.picturerepo.domain.user.constant.UserConstant.USER_LOGIN_STATE;
 
 
 /**
@@ -46,7 +46,7 @@ public class StpInterfaceImpl implements StpInterface {
     private String contextPath;
 
     @Resource
-    private UserService userService;
+    private UserApplicationService userApplicationService;
 
     @Resource
     private SpaceService spaceService;
@@ -55,7 +55,7 @@ public class StpInterfaceImpl implements StpInterface {
     private SpaceUserService spaceUserService;
 
     @Resource
-    private PictureService pictureService;
+    private PictureApplicationService pictureApplicationService;
 
     @Resource
     private SpaceUserAuthManager spaceUserAuthManager;
@@ -115,7 +115,7 @@ public class StpInterfaceImpl implements StpInterface {
             if (pictureId == null) {
                 return ADMIN_PERMISSIONS;
             }
-            Picture picture = pictureService.lambdaQuery()
+            Picture picture = pictureApplicationService.lambdaQuery()
                     .eq(Picture::getId, pictureId)
                     .select(Picture::getId, Picture::getSpaceId, Picture::getUserId)
                     .one();
@@ -125,7 +125,7 @@ public class StpInterfaceImpl implements StpInterface {
             spaceId = picture.getSpaceId();
             // 公共图库，仅本人或管理员可操作
             if (spaceId == null) {
-                if (picture.getUserId().equals(userId) || userService.isAdmin(loginUser)) {
+                if (picture.getUserId().equals(userId) || loginUser.isAdmin()) {
                     return ADMIN_PERMISSIONS;
                 } else {
                     // 不是自己的图片，仅可查看
@@ -141,7 +141,7 @@ public class StpInterfaceImpl implements StpInterface {
         // 根据 Space 类型判断权限
         if (space.getSpaceType() == SpaceTypeEnum.PRIVATE.getValue()) {
             // 私有空间，仅本人或管理员有权限
-            if (space.getUserId().equals(userId) || userService.isAdmin(loginUser)) {
+            if (space.getUserId().equals(userId) || loginUser.isAdmin()) {
                 return ADMIN_PERMISSIONS;
             } else {
                 return new ArrayList<>();

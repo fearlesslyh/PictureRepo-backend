@@ -6,24 +6,24 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.lyh.picturerepobackend.exception.BusinessException;
-import com.lyh.picturerepobackend.exception.ErrorCode;
-import com.lyh.picturerepobackend.exception.ThrowUtils;
+import com.lyh.picturerepo.application.service.UserApplicationService;
+import com.lyh.picturerepo.domain.user.entity.User;
+import com.lyh.picturerepo.infrastructure.exception.BusinessException;
+import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
+import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
+import com.lyh.picturerepo.infrastructure.mapper.SpaceMapper;
+import com.lyh.picturerepo.interfaces.vo.user.UserVO;
 import com.lyh.picturerepobackend.manager.sharding.DynamicShardingManager;
-import com.lyh.picturerepobackend.mapper.SpaceMapper;
 import com.lyh.picturerepobackend.model.dto.space.SpaceAdd;
 import com.lyh.picturerepobackend.model.dto.space.SpaceQuery;
 import com.lyh.picturerepobackend.model.entity.Space;
 import com.lyh.picturerepobackend.model.entity.SpaceUser;
-import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.SpaceLevelEnum;
 import com.lyh.picturerepobackend.model.enums.SpaceRoleEnum;
 import com.lyh.picturerepobackend.model.enums.SpaceTypeEnum;
 import com.lyh.picturerepobackend.model.vo.SpaceVO;
-import com.lyh.picturerepobackend.model.vo.UserVO;
 import com.lyh.picturerepobackend.service.SpaceService;
 import com.lyh.picturerepobackend.service.SpaceUserService;
-import com.lyh.picturerepobackend.service.UserService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -52,7 +52,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     private RedissonClient redissonClient;
 
     @Resource
-    private UserService userService;
+    private UserApplicationService userApplicationService;
 
     @Resource
     private TransactionTemplate transactionTemplate;
@@ -135,7 +135,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
         // 3. 校验权限，非管理员只能创建普通级别的空间
         Long userId = loginUser.getId();
         space.setUserId(userId);
-        if (SpaceLevelEnum.COMMON.getValue() != spaceAdd.getSpaceLevel() && userService.isAdmin(loginUser)) {
+        if (SpaceLevelEnum.COMMON.getValue() != spaceAdd.getSpaceLevel() && (loginUser.isAdmin())) {
             // 非普通空间，需要管理员审核
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限创建指定的空间");
         }
@@ -203,7 +203,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     @Override
     public void checkSpaceAuth(User loginUser, Space space) {
         // 仅本人或管理员可编辑
-        if (!space.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+        if (!space.getUserId().equals(loginUser.getId()) && !(loginUser.isAdmin())) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
     }
@@ -215,8 +215,8 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
         // 关联查询用户信息
         Long userId = space.getUserId();
         if (userId != null && userId > 0) {
-            User user = userService.getById(userId);
-            UserVO userVO = userService.getUserVO(user);
+            User user = userApplicationService.getUserById(userId);
+            UserVO userVO = userApplicationService.getUserVO(user);
             spaceVO.setUser(userVO);
         }
         return spaceVO;
@@ -237,7 +237,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
         // 1,2,3,4
         Set<Long> userIdSet = spaceList.stream().map(Space::getUserId).collect(Collectors.toSet());
         // 1 => user1, 2 => user2
-        Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
+        Map<Long, List<User>> userIdUserListMap = userApplicationService.listByIds(userIdSet).stream()
                 .collect(Collectors.groupingBy(User::getId));
         // 2. 填充信息
         spaceVOList.forEach(spaceVO -> {
@@ -246,7 +246,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
             if (userIdUserListMap.containsKey(userId)) {
                 user = userIdUserListMap.get(userId).get(0);
             }
-            spaceVO.setUser(userService.getUserVO(user));
+            spaceVO.setUser(userApplicationService.getUserVO(user));
         });
         spaceVOPage.setRecords(spaceVOList);
         return spaceVOPage;

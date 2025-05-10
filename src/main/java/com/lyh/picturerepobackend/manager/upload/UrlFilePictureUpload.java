@@ -6,9 +6,9 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpStatus;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
-import com.lyh.picturerepobackend.exception.BusinessException;
-import com.lyh.picturerepobackend.exception.ErrorCode;
-import com.lyh.picturerepobackend.exception.ThrowUtils;
+import com.lyh.picturerepo.infrastructure.exception.BusinessException;
+import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
+import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -17,7 +17,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.lyh.picturerepobackend.exception.ErrorCode.PARAMS_ERROR;
+import static com.lyh.picturerepo.infrastructure.exception.ErrorCode.PARAMS_ERROR;
 
 /**
  * @author <a href=https://github.com/fearlesslyh> 梁懿豪 </a>

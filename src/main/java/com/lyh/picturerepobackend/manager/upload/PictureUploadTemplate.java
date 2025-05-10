@@ -5,9 +5,9 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
-import com.lyh.picturerepobackend.config.CosConfig;
-import com.lyh.picturerepobackend.exception.BusinessException;
-import com.lyh.picturerepobackend.manager.CosManager;
+import com.lyh.picturerepo.infrastructure.api.CosManager;
+import com.lyh.picturerepo.infrastructure.config.CosConfig;
+import com.lyh.picturerepo.infrastructure.exception.BusinessException;
 import com.lyh.picturerepobackend.model.dto.file.FileUpload;
 import com.qcloud.cos.model.PutObjectResult;
 import com.qcloud.cos.model.ciModel.persistence.CIObject;
@@ -20,7 +20,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Objects;
 
-import static com.lyh.picturerepobackend.exception.ErrorCode.SYSTEM_ERROR;
+import static com.lyh.picturerepo.infrastructure.exception.ErrorCode.SYSTEM_ERROR;
 
 /**
  * @author <a href=https://github.com/fearlesslyh> 梁懿豪 </a>

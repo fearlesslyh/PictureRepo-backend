@@ -1,7 +1,7 @@
 package com.lyh.picturerepobackend.manager.websocket.disruptor;
 
+import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepobackend.manager.websocket.model.PictureEditRequestMessage;
-import com.lyh.picturerepobackend.model.entity.User;
 import lombok.Data;
 import org.springframework.web.socket.WebSocketSession;
 

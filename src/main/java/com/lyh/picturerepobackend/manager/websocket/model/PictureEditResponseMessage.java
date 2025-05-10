@@ -1,6 +1,6 @@
 package com.lyh.picturerepobackend.manager.websocket.model;
 
-import com.lyh.picturerepobackend.model.vo.UserVO;
+import com.lyh.picturerepo.interfaces.vo.user.UserVO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

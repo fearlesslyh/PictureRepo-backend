@@ -2,8 +2,8 @@ package com.lyh.picturerepobackend.manager.websocket.disruptor;
 
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
+import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepobackend.manager.websocket.model.PictureEditRequestMessage;
-import com.lyh.picturerepobackend.model.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;

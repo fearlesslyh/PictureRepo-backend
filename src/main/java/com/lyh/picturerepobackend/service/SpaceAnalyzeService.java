@@ -1,9 +1,9 @@
 package com.lyh.picturerepobackend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepobackend.model.dto.space.analyse.*;
 import com.lyh.picturerepobackend.model.entity.Space;
-import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.vo.space.analyse.*;
 
 import java.util.List;

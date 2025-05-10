@@ -1,22 +1,22 @@
 package com.lyh.picturerepobackend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.lyh.picturerepobackend.annotation.AuthorityCheck;
-import com.lyh.picturerepobackend.common.BaseResponse;
-import com.lyh.picturerepobackend.common.DeleteRequest;
-import com.lyh.picturerepobackend.common.ResultUtils;
-import com.lyh.picturerepobackend.constant.UserConstant;
-import com.lyh.picturerepobackend.exception.BusinessException;
-import com.lyh.picturerepobackend.exception.ErrorCode;
-import com.lyh.picturerepobackend.exception.ThrowUtils;
+import com.lyh.picturerepo.application.service.UserApplicationService;
+import com.lyh.picturerepo.domain.user.constant.UserConstant;
+import com.lyh.picturerepo.domain.user.entity.User;
+import com.lyh.picturerepo.infrastructure.annotation.AuthorityCheck;
+import com.lyh.picturerepo.infrastructure.common.BaseResponse;
+import com.lyh.picturerepo.infrastructure.common.DeleteRequest;
+import com.lyh.picturerepo.infrastructure.common.ResultUtils;
+import com.lyh.picturerepo.infrastructure.exception.BusinessException;
+import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
+import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
 import com.lyh.picturerepobackend.manager.auth.SpaceUserAuthManager;
 import com.lyh.picturerepobackend.model.dto.space.*;
 import com.lyh.picturerepobackend.model.entity.Space;
-import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.SpaceLevelEnum;
 import com.lyh.picturerepobackend.model.vo.SpaceVO;
 import com.lyh.picturerepobackend.service.SpaceService;
-import com.lyh.picturerepobackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 public class SpaceController {
 
     @Resource
-    private UserService userService;
+    private UserApplicationService userApplicationService;
 
     @Resource
     private SpaceService spaceService;
@@ -50,7 +50,7 @@ public class SpaceController {
     @PostMapping("/add")
     public BaseResponse<Long> addSpace(@RequestBody SpaceAdd spaceAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(spaceAddRequest == null, ErrorCode.PARAMS_ERROR);
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userApplicationService.getLoginUser(request);
         long newId = spaceService.addSpace(spaceAddRequest, loginUser);
         return ResultUtils.success(newId);
     }
@@ -61,7 +61,7 @@ public class SpaceController {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userApplicationService.getLoginUser(request);
         Long id = deleteRequest.getId();
         // 判断是否存在
         Space oldSpace = spaceService.getById(id);
@@ -129,7 +129,7 @@ public class SpaceController {
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
         SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userApplicationService.getLoginUser(request);
         List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
         spaceVO.setPermissionList(permissionList);
         // 获取封装类
@@ -184,7 +184,7 @@ public class SpaceController {
         space.setEditTime(new Date());
         // 数据校验
         spaceService.validSpace(space, false);
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userApplicationService.getLoginUser(request);
         // 判断是否存在
         long id = spaceEditRequest.getId();
         Space oldSpace = spaceService.getById(id);

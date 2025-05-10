@@ -172,7 +172,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
-                    <mainClass>com.lyh.picturerepobackend.PictureRepoBackendApplication</mainClass>
+                    <mainClass>com.lyh.picturerepo.PictureRepoBackendApplication</mainClass>
                     <skip>true</skip>
                 </configuration>
                 <executions>

@@ -2,12 +2,12 @@ package com.lyh.picturerepobackend.manager.websocket.disruptor;
 
 import cn.hutool.json.JSONUtil;
 import com.lmax.disruptor.WorkHandler;
+import com.lyh.picturerepo.application.service.UserApplicationService;
+import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepobackend.manager.websocket.PictureEditHandler;
 import com.lyh.picturerepobackend.manager.websocket.model.PictureEditMessageTypeEnum;
 import com.lyh.picturerepobackend.manager.websocket.model.PictureEditRequestMessage;
 import com.lyh.picturerepobackend.manager.websocket.model.PictureEditResponseMessage;
-import com.lyh.picturerepobackend.model.entity.User;
-import com.lyh.picturerepobackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
@@ -26,7 +26,7 @@ public class PictureEditEventWorkHandler implements WorkHandler<PictureEditEvent
     private PictureEditHandler pictureEditHandler;
 
     @Resource
-    private UserService userService;
+    private UserApplicationService userApplicationService;
 
     @Override
     public void onEvent(PictureEditEvent pictureEditEvent) throws Exception {
@@ -53,7 +53,7 @@ public class PictureEditEventWorkHandler implements WorkHandler<PictureEditEvent
                 PictureEditResponseMessage pictureEditResponseMessage = new PictureEditResponseMessage();
                 pictureEditResponseMessage.setType(PictureEditMessageTypeEnum.ERROR.getValue());
                 pictureEditResponseMessage.setMessage("消息类型错误");
-                pictureEditResponseMessage.setUser(userService.getUserVO(user));
+                pictureEditResponseMessage.setUser(userApplicationService.getUserVO(user));
                 session.sendMessage(new TextMessage(JSONUtil.toJsonStr(pictureEditResponseMessage)));
                 break;
         }

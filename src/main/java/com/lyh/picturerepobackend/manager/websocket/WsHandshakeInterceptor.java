@@ -2,15 +2,15 @@ package com.lyh.picturerepobackend.manager.websocket;
 
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.lyh.picturerepo.application.service.UserApplicationService;
+import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepobackend.manager.auth.SpaceUserAuthManager;
 import com.lyh.picturerepobackend.manager.auth.model.SpaceUserPermissionConstant;
-import com.lyh.picturerepobackend.model.entity.Picture;
+import com.lyh.picturerepo.domain.picture.entity.Picture;
 import com.lyh.picturerepobackend.model.entity.Space;
-import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.SpaceTypeEnum;
-import com.lyh.picturerepobackend.service.PictureService;
+import com.lyh.picturerepo.application.service.PictureApplicationService;
 import com.lyh.picturerepobackend.service.SpaceService;
-import com.lyh.picturerepobackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -32,10 +32,10 @@ import java.util.Map;
 public class WsHandshakeInterceptor implements HandshakeInterceptor {
 
     @Resource
-    private UserService userService;
+    private UserApplicationService userApplicationService;
 
     @Resource
-    private PictureService pictureService;
+    private PictureApplicationService pictureApplicationService;
 
     @Resource
     private SpaceService spaceService;
@@ -64,13 +64,13 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
                 return false;
             }
             // 获取当前登录用户
-            User loginUser = userService.getLoginUser(httpServletRequest);
+            User loginUser = userApplicationService.getLoginUser(httpServletRequest);
             if (ObjUtil.isEmpty(loginUser)) {
                 log.error("用户未登录，拒绝握手");
                 return false;
             }
             // 校验用户是否有编辑当前图片的权限
-            Picture picture = pictureService.getById(pictureId);
+            Picture picture = pictureApplicationService.getById(pictureId);
             if (ObjUtil.isEmpty(picture)) {
                 log.error("图片不存在，拒绝握手");
                 return false;

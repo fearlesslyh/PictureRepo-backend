@@ -6,6 +6,7 @@ package com.lyh.picturerepobackend.model.vo;
  * @date 2025/4/27 21:48
  */
 
+import com.lyh.picturerepo.interfaces.vo.user.UserVO;
 import com.lyh.picturerepobackend.model.entity.Space;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;

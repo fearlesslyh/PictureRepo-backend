@@ -1,7 +1,7 @@
 package com.lyh.picturerepobackend.manager.upload;
 
 import cn.hutool.core.io.FileUtil;
-import com.lyh.picturerepobackend.exception.ThrowUtils;
+import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -9,7 +9,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.lyh.picturerepobackend.exception.ErrorCode.PARAMS_ERROR;
+import static com.lyh.picturerepo.infrastructure.exception.ErrorCode.PARAMS_ERROR;
 
 /**
  * @author <a href=https://github.com/fearlesslyh> 梁懿豪 </a>

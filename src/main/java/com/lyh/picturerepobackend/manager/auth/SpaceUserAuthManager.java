@@ -3,16 +3,16 @@ package com.lyh.picturerepobackend.manager.auth;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.lyh.picturerepo.application.service.UserApplicationService;
+import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepobackend.manager.auth.model.SpaceUserAuthConfig;
 import com.lyh.picturerepobackend.manager.auth.model.SpaceUserPermissionConstant;
 import com.lyh.picturerepobackend.manager.auth.model.SpaceUserRole;
 import com.lyh.picturerepobackend.model.entity.Space;
 import com.lyh.picturerepobackend.model.entity.SpaceUser;
-import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.enums.SpaceRoleEnum;
 import com.lyh.picturerepobackend.model.enums.SpaceTypeEnum;
 import com.lyh.picturerepobackend.service.SpaceUserService;
-import com.lyh.picturerepobackend.service.UserService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -27,7 +27,7 @@ import java.util.List;
 public class SpaceUserAuthManager {
 
     @Resource
-    private UserService userService;
+    private UserApplicationService userApplicationService;
 
     @Resource
     private SpaceUserService spaceUserService;
@@ -76,7 +76,7 @@ public class SpaceUserAuthManager {
         List<String> ADMIN_PERMISSIONS = getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue());
         // 公共图库
         if (space == null) {
-            if (userService.isAdmin(loginUser)) {
+            if (loginUser.isAdmin()) {
                 return ADMIN_PERMISSIONS;
             }
             return Collections.singletonList(SpaceUserPermissionConstant.PICTURE_VIEW);
@@ -89,7 +89,7 @@ public class SpaceUserAuthManager {
         switch (spaceTypeEnum) {
             case PRIVATE:
                 // 私有空间，仅本人或管理员有所有权限
-                if (space.getUserId().equals(loginUser.getId()) || userService.isAdmin(loginUser)) {
+                if (space.getUserId().equals(loginUser.getId()) ||loginUser.isAdmin()) {
                     return ADMIN_PERMISSIONS;
                 } else {
                     return new ArrayList<>();

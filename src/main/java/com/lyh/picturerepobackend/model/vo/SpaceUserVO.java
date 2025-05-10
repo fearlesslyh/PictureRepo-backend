@@ -1,5 +1,6 @@
 package com.lyh.picturerepobackend.model.vo;
 
+import com.lyh.picturerepo.interfaces.vo.user.UserVO;
 import com.lyh.picturerepobackend.model.entity.SpaceUser;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;

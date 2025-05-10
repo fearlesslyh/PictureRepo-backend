@@ -15,7 +15,6 @@ import org.apache.shardingsphere.sharding.rule.ShardingRule;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.sql.DataSource;

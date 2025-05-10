@@ -1,6 +1,6 @@
 package com.lyh.picturerepobackend.model.dto.space;
 
-import com.lyh.picturerepobackend.common.PageRequest;
+import com.lyh.picturerepo.infrastructure.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

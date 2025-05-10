@@ -3,10 +3,10 @@ package com.lyh.picturerepobackend.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepobackend.model.dto.space.SpaceAdd;
 import com.lyh.picturerepobackend.model.dto.space.SpaceQuery;
 import com.lyh.picturerepobackend.model.entity.Space;
-import com.lyh.picturerepobackend.model.entity.User;
 import com.lyh.picturerepobackend.model.vo.SpaceVO;
 
 import javax.servlet.http.HttpServletRequest;
