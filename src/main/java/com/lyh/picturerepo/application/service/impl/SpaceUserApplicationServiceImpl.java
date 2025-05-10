@@ -10,6 +10,7 @@ import com.lyh.picturerepo.application.service.UserApplicationService;
 import com.lyh.picturerepo.domain.space.entity.Space;
 import com.lyh.picturerepo.domain.space.entity.SpaceUser;
 import com.lyh.picturerepo.domain.space.service.SpaceDomainService;
+import com.lyh.picturerepo.domain.space.service.SpaceUserDomainService;
 import com.lyh.picturerepo.domain.space.valueObject.SpaceRoleEnum;
 import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepo.infrastructure.exception.BusinessException;
@@ -39,8 +40,7 @@ import java.util.stream.Collectors;
  * @createDate 2025-01-02 20:07:15
  */
 @Service
-public class SpaceUserApplicationServiceImpl
-        implements SpaceUserApplicationService {
+public class SpaceUserApplicationServiceImpl implements SpaceUserApplicationService {
 
     @Resource
     private UserApplicationService userApplicationService;
@@ -48,6 +48,9 @@ public class SpaceUserApplicationServiceImpl
     @Resource
     @Lazy
     private SpaceDomainService spaceService;
+
+    @Resource
+    private SpaceUserDomainService spaceUserDomainService;
 
     @Override
     public long addSpaceUser(SpaceUserAddRequest spaceUserAddRequest) {
@@ -142,20 +145,7 @@ public class SpaceUserApplicationServiceImpl
 
     @Override
     public QueryWrapper<SpaceUser> getQueryWrapper(SpaceUserQueryRequest spaceUserQueryRequest) {
-        QueryWrapper<SpaceUser> queryWrapper = new QueryWrapper<>();
-        if (spaceUserQueryRequest == null) {
-            return queryWrapper;
-        }
-        // 从对象中取值
-        Long id = spaceUserQueryRequest.getId();
-        Long spaceId = spaceUserQueryRequest.getSpaceId();
-        Long userId = spaceUserQueryRequest.getUserId();
-        String spaceRole = spaceUserQueryRequest.getSpaceRole();
-        queryWrapper.eq(ObjUtil.isNotEmpty(id), "id", id);
-        queryWrapper.eq(ObjUtil.isNotEmpty(spaceId), "spaceId", spaceId);
-        queryWrapper.eq(ObjUtil.isNotEmpty(userId), "userId", userId);
-        queryWrapper.eq(ObjUtil.isNotEmpty(spaceRole), "spaceRole", spaceRole);
-        return queryWrapper;
+        return spaceUserDomainService.getQueryWrapper(spaceUserQueryRequest);
     }
 }
 

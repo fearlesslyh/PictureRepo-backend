@@ -1,8 +1,6 @@
 package com.lyh.picturerepo.domain.picture.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.lyh.picturerepo.domain.picture.entity.Picture;
 import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepo.infrastructure.api.aliyunai.model.CreateOutPaintingTaskResponse;
@@ -10,7 +8,6 @@ import com.lyh.picturerepo.interfaces.dto.picture.*;
 import com.lyh.picturerepo.interfaces.vo.picture.PictureVO;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**

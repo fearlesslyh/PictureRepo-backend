@@ -6,6 +6,8 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.picturerepo.application.service.PictureApplicationService;
+import com.lyh.picturerepo.domain.picture.entity.Picture;
+import com.lyh.picturerepo.domain.space.entity.Space;
 import com.lyh.picturerepo.domain.space.service.SpaceAnalyzeDomainService;
 import com.lyh.picturerepo.domain.space.service.SpaceDomainService;
 import com.lyh.picturerepo.domain.user.entity.User;
@@ -14,9 +16,7 @@ import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
 import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
 import com.lyh.picturerepo.infrastructure.mapper.SpaceMapper;
 import com.lyh.picturerepo.interfaces.dto.space.analyse.*;
-import com.lyh.picturerepo.domain.picture.entity.Picture;
 import com.lyh.picturerepo.interfaces.vo.space.analyse.*;
-import com.lyh.picturerepo.domain.space.entity.Space;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
