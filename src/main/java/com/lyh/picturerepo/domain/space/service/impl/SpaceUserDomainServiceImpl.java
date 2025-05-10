@@ -1,26 +1,26 @@
-package com.lyh.picturerepo.application.service.impl;
+package com.lyh.picturerepo.domain.space.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.lyh.picturerepo.application.service.SpaceUserApplicationService;
-import com.lyh.picturerepo.application.service.UserApplicationService;
-import com.lyh.picturerepo.domain.space.entity.Space;
-import com.lyh.picturerepo.domain.space.entity.SpaceUser;
 import com.lyh.picturerepo.domain.space.service.SpaceDomainService;
-import com.lyh.picturerepo.domain.space.valueObject.SpaceRoleEnum;
+import com.lyh.picturerepo.application.service.UserApplicationService;
 import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepo.infrastructure.exception.BusinessException;
 import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
 import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
 import com.lyh.picturerepo.infrastructure.mapper.SpaceUserMapper;
+import com.lyh.picturerepo.interfaces.vo.user.UserVO;
 import com.lyh.picturerepo.interfaces.dto.spaceuser.SpaceUserAddRequest;
 import com.lyh.picturerepo.interfaces.dto.spaceuser.SpaceUserQueryRequest;
+import com.lyh.picturerepo.domain.space.entity.Space;
+import com.lyh.picturerepo.domain.space.entity.SpaceUser;
+import com.lyh.picturerepo.domain.space.valueObject.SpaceRoleEnum;
 import com.lyh.picturerepo.interfaces.vo.space.SpaceUserVO;
 import com.lyh.picturerepo.interfaces.vo.space.SpaceVO;
-import com.lyh.picturerepo.interfaces.vo.user.UserVO;
+import com.lyh.picturerepo.domain.space.service.SpaceUserDomainService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -39,8 +39,8 @@ import java.util.stream.Collectors;
  * @createDate 2025-01-02 20:07:15
  */
 @Service
-public class SpaceUserApplicationServiceImpl
-        implements SpaceUserApplicationService {
+public class SpaceUserDomainServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser>
+        implements SpaceUserDomainService {
 
     @Resource
     private UserApplicationService userApplicationService;

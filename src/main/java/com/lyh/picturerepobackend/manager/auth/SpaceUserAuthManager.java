@@ -12,7 +12,7 @@ import com.lyh.picturerepo.domain.space.entity.Space;
 import com.lyh.picturerepo.domain.space.entity.SpaceUser;
 import com.lyh.picturerepo.domain.space.valueObject.SpaceRoleEnum;
 import com.lyh.picturerepo.domain.space.valueObject.SpaceTypeEnum;
-import com.lyh.picturerepo.application.service.SpaceUserApplicationService;
+import com.lyh.picturerepo.domain.space.service.SpaceUserDomainService;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -30,7 +30,7 @@ public class SpaceUserAuthManager {
     private UserApplicationService userApplicationService;
 
     @Resource
-    private SpaceUserApplicationService spaceUserApplicationService;
+    private SpaceUserDomainService spaceUserDomainService;
 
     public static final SpaceUserAuthConfig SPACE_USER_AUTH_CONFIG;
 
@@ -96,7 +96,7 @@ public class SpaceUserAuthManager {
                 }
             case TEAM:
                 // 团队空间，查询 SpaceUser 并获取角色和权限
-                SpaceUser spaceUser = spaceUserApplicationService.lambdaQuery()
+                SpaceUser spaceUser = spaceUserDomainService.lambdaQuery()
                         .eq(SpaceUser::getSpaceId, space.getId())
                         .eq(SpaceUser::getUserId, loginUser.getId())
                         .one();

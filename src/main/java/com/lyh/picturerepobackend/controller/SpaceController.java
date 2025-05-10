@@ -1,6 +1,7 @@
 package com.lyh.picturerepobackend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.lyh.picturerepo.domain.space.service.SpaceDomainService;
 import com.lyh.picturerepo.application.service.UserApplicationService;
 import com.lyh.picturerepo.domain.user.constant.UserConstant;
 import com.lyh.picturerepo.domain.user.entity.User;
@@ -13,11 +14,9 @@ import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
 import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
 import com.lyh.picturerepo.interfaces.dto.space.*;
 import com.lyh.picturerepobackend.manager.auth.SpaceUserAuthManager;
-import com.lyh.picturerepobackend.model.dto.space.*;
 import com.lyh.picturerepo.domain.space.entity.Space;
 import com.lyh.picturerepo.domain.space.valueObject.SpaceLevelEnum;
 import com.lyh.picturerepo.interfaces.vo.space.SpaceVO;
-import com.lyh.picturerepo.application.service.SpaceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +42,7 @@ public class SpaceController {
     private UserApplicationService userApplicationService;
 
     @Resource
-    private SpaceService spaceService;
+    private SpaceDomainService spaceService;
 
     @Resource
     private SpaceUserAuthManager spaceUserAuthManager;

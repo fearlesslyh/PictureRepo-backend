@@ -1,4 +1,4 @@
-package com.lyh.picturerepo.application.service.impl;
+package com.lyh.picturerepo.domain.space.service.impl;
 
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjUtil;
@@ -6,9 +6,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.picturerepo.application.service.PictureApplicationService;
-import com.lyh.picturerepo.application.service.SpaceAnalyzeApplicationService;
-import com.lyh.picturerepo.domain.picture.entity.Picture;
-import com.lyh.picturerepo.domain.space.entity.Space;
+import com.lyh.picturerepo.domain.space.service.SpaceAnalyzeDomainService;
 import com.lyh.picturerepo.domain.space.service.SpaceDomainService;
 import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepo.infrastructure.exception.BusinessException;
@@ -16,7 +14,9 @@ import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
 import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
 import com.lyh.picturerepo.infrastructure.mapper.SpaceMapper;
 import com.lyh.picturerepo.interfaces.dto.space.analyse.*;
+import com.lyh.picturerepo.domain.picture.entity.Picture;
 import com.lyh.picturerepo.interfaces.vo.space.analyse.*;
+import com.lyh.picturerepo.domain.space.entity.Space;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
  * @createDate 2024-12-18 19:53:34
  */
 @Service
-public class SpaceAnalyzeApplicationServiceImpl
-        implements SpaceAnalyzeApplicationService {
+public class SpaceAnalyzeDomainServiceImpl extends ServiceImpl<SpaceMapper, Space>
+        implements SpaceAnalyzeDomainService {
 
     @Resource
     private SpaceDomainService spaceService;

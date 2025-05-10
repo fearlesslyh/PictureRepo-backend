@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.lyh.picturerepo.domain.space.service.SpaceDomainService;
 import com.lyh.picturerepo.domain.picture.entity.Picture;
 import com.lyh.picturerepo.domain.picture.repository.PictureRepository;
 import com.lyh.picturerepo.domain.picture.service.PictureDomainService;
@@ -27,7 +28,6 @@ import com.lyh.picturerepobackend.manager.upload.UrlFilePictureUpload;
 import com.lyh.picturerepobackend.model.dto.file.FileUpload;
 import com.lyh.picturerepo.domain.space.entity.Space;
 import com.lyh.picturerepo.interfaces.vo.picture.PictureVO;
-import com.lyh.picturerepo.application.service.SpaceService;
 import groovy.lang.Lazy;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -75,7 +75,7 @@ public class PictureDomainServiceImpl implements PictureDomainService {
 
     @Resource
     @Lazy
-    private SpaceService spaceService;
+    private SpaceDomainService spaceService;
 
     @Resource
     private TransactionTemplate transactionTemplate;

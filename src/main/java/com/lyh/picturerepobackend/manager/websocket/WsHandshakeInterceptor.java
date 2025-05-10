@@ -2,6 +2,7 @@ package com.lyh.picturerepobackend.manager.websocket;
 
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import com.lyh.picturerepo.domain.space.service.SpaceDomainService;
 import com.lyh.picturerepo.application.service.UserApplicationService;
 import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepobackend.manager.auth.SpaceUserAuthManager;
@@ -10,7 +11,6 @@ import com.lyh.picturerepo.domain.picture.entity.Picture;
 import com.lyh.picturerepo.domain.space.entity.Space;
 import com.lyh.picturerepo.domain.space.valueObject.SpaceTypeEnum;
 import com.lyh.picturerepo.application.service.PictureApplicationService;
-import com.lyh.picturerepo.application.service.SpaceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -38,7 +38,7 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
     private PictureApplicationService pictureApplicationService;
 
     @Resource
-    private SpaceService spaceService;
+    private SpaceDomainService spaceService;
 
     @Resource
     private SpaceUserAuthManager spaceUserAuthManager;

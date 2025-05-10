@@ -11,7 +11,7 @@ import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
 import cn.hutool.json.JSONUtil;
 import com.lyh.picturerepo.application.service.PictureApplicationService;
-import com.lyh.picturerepo.application.service.UserApplicationService;
+import com.lyh.picturerepo.domain.space.service.SpaceDomainService;
 import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepo.infrastructure.exception.BusinessException;
 import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
@@ -21,8 +21,7 @@ import com.lyh.picturerepo.domain.space.entity.Space;
 import com.lyh.picturerepo.domain.space.entity.SpaceUser;
 import com.lyh.picturerepo.domain.space.valueObject.SpaceRoleEnum;
 import com.lyh.picturerepo.domain.space.valueObject.SpaceTypeEnum;
-import com.lyh.picturerepo.application.service.SpaceService;
-import com.lyh.picturerepo.application.service.SpaceUserApplicationService;
+import com.lyh.picturerepo.domain.space.service.SpaceUserDomainService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -45,14 +44,12 @@ public class StpInterfaceImpl implements StpInterface {
     @Value("${server.servlet.context-path}")
     private String contextPath;
 
-    @Resource
-    private UserApplicationService userApplicationService;
 
     @Resource
-    private SpaceService spaceService;
+    private SpaceDomainService spaceService;
 
     @Resource
-    private SpaceUserApplicationService spaceUserApplicationService;
+    private SpaceUserDomainService spaceUserDomainService;
 
     @Resource
     private PictureApplicationService pictureApplicationService;
@@ -91,12 +88,12 @@ public class StpInterfaceImpl implements StpInterface {
         // 如果有 spaceUserId，必然是团队空间，通过数据库查询 SpaceUser 对象
         Long spaceUserId = authContext.getSpaceUserId();
         if (spaceUserId != null) {
-            spaceUser = spaceUserApplicationService.getById(spaceUserId);
+            spaceUser = spaceUserDomainService.getById(spaceUserId);
             if (spaceUser == null) {
                 throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "未找到空间用户信息");
             }
             // 取出当前登录用户对应的 spaceUser
-            SpaceUser loginSpaceUser = spaceUserApplicationService.lambdaQuery()
+            SpaceUser loginSpaceUser = spaceUserDomainService.lambdaQuery()
                     .eq(SpaceUser::getSpaceId, spaceUser.getSpaceId())
                     .eq(SpaceUser::getUserId, userId)
                     .one();
@@ -148,7 +145,7 @@ public class StpInterfaceImpl implements StpInterface {
             }
         } else {
             // 团队空间，查询 SpaceUser 并获取角色和权限
-            spaceUser = spaceUserApplicationService.lambdaQuery()
+            spaceUser = spaceUserDomainService.lambdaQuery()
                     .eq(SpaceUser::getSpaceId, spaceId)
                     .eq(SpaceUser::getUserId, userId)
                     .one();

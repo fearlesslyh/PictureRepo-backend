@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.lyh.picturerepo.domain.space.service.SpaceDomainService;
 import com.lyh.picturerepo.application.service.UserApplicationService;
 import com.lyh.picturerepo.domain.user.constant.UserConstant;
 import com.lyh.picturerepo.domain.user.entity.User;
@@ -35,7 +36,6 @@ import com.lyh.picturerepo.domain.space.entity.Space;
 import com.lyh.picturerepo.domain.picture.valueObject.PictureReviewStatus;
 import com.lyh.picturerepo.interfaces.vo.picture.PictureVO;
 import com.lyh.picturerepo.application.service.PictureApplicationService;
-import com.lyh.picturerepo.application.service.SpaceService;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -78,7 +78,7 @@ public class PictureController {
 
     @Resource
     @Lazy
-    private SpaceService spaceService;
+    private SpaceDomainService spaceService;
 
     @Resource
     private AliYunAiApi aliYunAiApi;
