@@ -60,7 +60,7 @@ public class SpaceUserApplicationServiceImpl implements SpaceUserApplicationServ
         BeanUtils.copyProperties(spaceUserAddRequest, spaceUser);
         validSpaceUser(spaceUser, true);
         // 数据库操作
-        boolean result = this.save(spaceUser);
+        boolean result = spaceUserDomainService.save(spaceUser);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return spaceUser.getId();
     }

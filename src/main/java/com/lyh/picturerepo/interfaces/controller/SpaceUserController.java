@@ -1,7 +1,9 @@
-package com.lyh.picturerepobackend.controller;
+package com.lyh.picturerepo.interfaces.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.lyh.picturerepo.application.service.SpaceUserApplicationService;
 import com.lyh.picturerepo.application.service.UserApplicationService;
+import com.lyh.picturerepo.domain.space.entity.Space;
 import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepo.infrastructure.common.BaseResponse;
 import com.lyh.picturerepo.infrastructure.common.DeleteRequest;
@@ -9,6 +11,7 @@ import com.lyh.picturerepo.infrastructure.common.ResultUtils;
 import com.lyh.picturerepo.infrastructure.exception.BusinessException;
 import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
 import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
+import com.lyh.picturerepo.interfaces.assembler.SpaceUserAssembler;
 import com.lyh.picturerepobackend.manager.auth.annotation.SaSpaceCheckPermission;
 import com.lyh.picturerepobackend.manager.auth.model.SpaceUserPermissionConstant;
 import com.lyh.picturerepo.interfaces.dto.spaceuser.SpaceUserAddRequest;
@@ -42,6 +45,9 @@ public class SpaceUserController {
     @Resource
     private UserApplicationService userApplicationService;
 
+    @Resource
+    private SpaceUserApplicationService spaceUserApplicationService;
+
     /**
      * 添加成员到空间
      */
@@ -49,7 +55,7 @@ public class SpaceUserController {
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.SPACE_USER_MANAGE)
     public BaseResponse<Long> addSpaceUser(@RequestBody SpaceUserAddRequest spaceUserAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(spaceUserAddRequest == null, ErrorCode.PARAMS_ERROR);
-        long id = spaceUserDomainService.addSpaceUser(spaceUserAddRequest);
+        long id = spaceUserApplicationService.addSpaceUser(spaceUserAddRequest);
         return ResultUtils.success(id);
     }
 
@@ -101,7 +107,7 @@ public class SpaceUserController {
         List<SpaceUser> spaceUserList = spaceUserDomainService.list(
                 spaceUserDomainService.getQueryWrapper(spaceUserQueryRequest)
         );
-        return ResultUtils.success(spaceUserDomainService.getSpaceUserVOList(spaceUserList));
+        return ResultUtils.success(spaceUserApplicationService.getSpaceUserVOList(spaceUserList));
     }
 
     /**
@@ -115,16 +121,15 @@ public class SpaceUserController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         // 将实体类和 DTO 进行转换
-        SpaceUser spaceUser = new SpaceUser();
-        BeanUtils.copyProperties(spaceUserEditRequest, spaceUser);
+        SpaceUser spaceUserEntity = SpaceUserAssembler.toSpaceUserEntity(spaceUserEditRequest);
         // 数据校验
-        spaceUserDomainService.validSpaceUser(spaceUser, false);
+        spaceUserApplicationService.validSpaceUser(spaceUserEntity, false);
         // 判断是否存在
         long id = spaceUserEditRequest.getId();
         SpaceUser oldSpaceUser = spaceUserDomainService.getById(id);
         ThrowUtils.throwIf(oldSpaceUser == null, ErrorCode.NOT_FOUND_ERROR);
         // 操作数据库
-        boolean result = spaceUserDomainService.updateById(spaceUser);
+        boolean result = spaceUserDomainService.updateById(spaceUserEntity);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
@@ -140,6 +145,6 @@ public class SpaceUserController {
         List<SpaceUser> spaceUserList = spaceUserDomainService.list(
                 spaceUserDomainService.getQueryWrapper(spaceUserQueryRequest)
         );
-        return ResultUtils.success(spaceUserDomainService.getSpaceUserVOList(spaceUserList));
+        return ResultUtils.success(spaceUserApplicationService.getSpaceUserVOList(spaceUserList));
     }
 }

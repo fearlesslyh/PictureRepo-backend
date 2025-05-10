@@ -1,6 +1,12 @@
 package com.lyh.picturerepo.domain.space.entity;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.*;
+import com.lyh.picturerepo.domain.space.valueObject.SpaceLevelEnum;
+import com.lyh.picturerepo.domain.space.valueObject.SpaceTypeEnum;
+import com.lyh.picturerepo.infrastructure.exception.BusinessException;
+import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
+import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -84,6 +90,40 @@ public class Space implements Serializable {
      */
     private Integer spaceType;
 
+    public void validSpace(boolean add){
+
+        ThrowUtils.throwIf(this == null, ErrorCode.PARAMS_ERROR, "空间不能为空");
+        //从对象取值
+        String spaceName = this.getSpaceName();
+        Integer spaceLevel = this.getSpaceLevel();
+        SpaceLevelEnum spaceLevelEnum = SpaceLevelEnum.getEnumByValue(spaceLevel);
+        Integer spaceType = this.getSpaceType();
+        SpaceTypeEnum spaceTypeEnum = SpaceTypeEnum.getEnumByValue(spaceType);
+// 创建时校验
+        if (add) {
+            if (StrUtil.isBlank(spaceName)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间名称不能为空");
+            }
+            if (spaceLevel == null) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间级别不能为空");
+            }
+            if (spaceType == null) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间类别不能为空");
+            }
+        }
+        // 修改数据时，空间名称进行校验
+        if (StrUtil.isNotBlank(spaceName) && spaceName.length() > 30) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间名称过长");
+        }
+        // 修改数据时，空间级别进行校验
+        if (spaceLevel != null && spaceLevelEnum == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间级别不存在");
+        }
+        // 修改数据时，空间类别进行校验
+        if (spaceType != null && spaceTypeEnum == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间类别不存在");
+        }
+    }
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

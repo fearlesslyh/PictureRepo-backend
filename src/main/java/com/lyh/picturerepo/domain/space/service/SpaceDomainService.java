@@ -18,23 +18,13 @@ import javax.servlet.http.HttpServletRequest;
 */
 public interface SpaceDomainService extends IService<Space> {
 
-    void validSpace(Space space, boolean add);
 
     void fillSpaceBySpaceLevel(Space space);
 
-    long addSpace(SpaceAdd spaceAdd, User loginUser);
 
     void checkSpaceAuth(User loginUser, Space space);
 
     SpaceVO getSpaceVO(Space space, HttpServletRequest request);
-    /**
-     * 获取空间包装类（分页）
-     *
-     * @param spacePage
-     * @param request
-     * @return
-     */
-    Page<SpaceVO> getSpaceVOPage(Page<Space> spacePage, HttpServletRequest request);
     /**
      * 获取查询对象
      *

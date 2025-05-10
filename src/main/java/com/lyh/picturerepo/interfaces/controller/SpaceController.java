@@ -1,6 +1,7 @@
-package com.lyh.picturerepobackend.controller;
+package com.lyh.picturerepo.interfaces.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.lyh.picturerepo.application.service.SpaceApplicationService;
 import com.lyh.picturerepo.domain.space.service.SpaceDomainService;
 import com.lyh.picturerepo.application.service.UserApplicationService;
 import com.lyh.picturerepo.domain.user.constant.UserConstant;
@@ -45,13 +46,16 @@ public class SpaceController {
     private SpaceDomainService spaceService;
 
     @Resource
+    private SpaceApplicationService spaceApplicationService;
+
+    @Resource
     private SpaceUserAuthManager spaceUserAuthManager;
 
     @PostMapping("/add")
     public BaseResponse<Long> addSpace(@RequestBody SpaceAdd spaceAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(spaceAddRequest == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userApplicationService.getLoginUser(request);
-        long newId = spaceService.addSpace(spaceAddRequest, loginUser);
+        long newId = spaceApplicationService.addSpace(spaceAddRequest, loginUser);
         return ResultUtils.success(newId);
     }
 
@@ -94,7 +98,7 @@ public class SpaceController {
         // 自动填充数据
         spaceService.fillSpaceBySpaceLevel(space);
         // 数据校验
-        spaceService.validSpace(space, false);
+        space.validSpace(false);
         // 判断是否存在
         long id = spaceUpdateRequest.getId();
         Space oldSpace = spaceService.getById(id);
@@ -164,7 +168,7 @@ public class SpaceController {
         Page<Space> spacePage = spaceService.page(new Page<>(current, size),
                 spaceService.getQueryWrapper(spaceQueryRequest));
         // 获取封装类
-        return ResultUtils.success(spaceService.getSpaceVOPage(spacePage, request));
+        return ResultUtils.success(spaceApplicationService.getSpaceVOPage(spacePage, request));
     }
 
     /**
@@ -183,7 +187,7 @@ public class SpaceController {
         // 设置编辑时间
         space.setEditTime(new Date());
         // 数据校验
-        spaceService.validSpace(space, false);
+        space.validSpace(false);
         User loginUser = userApplicationService.getLoginUser(request);
         // 判断是否存在
         long id = spaceEditRequest.getId();

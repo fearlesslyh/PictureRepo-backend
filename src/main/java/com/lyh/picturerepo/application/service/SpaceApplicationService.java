@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 */
 public interface SpaceApplicationService{
 
-    void validSpace(Space space, boolean add);
 
     void fillSpaceBySpaceLevel(Space space);
 

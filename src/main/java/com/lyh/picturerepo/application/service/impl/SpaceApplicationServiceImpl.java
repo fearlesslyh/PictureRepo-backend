@@ -10,6 +10,7 @@ import com.lyh.picturerepo.application.service.SpaceApplicationService;
 import com.lyh.picturerepo.application.service.UserApplicationService;
 import com.lyh.picturerepo.domain.space.entity.Space;
 import com.lyh.picturerepo.domain.space.entity.SpaceUser;
+import com.lyh.picturerepo.domain.space.service.SpaceDomainService;
 import com.lyh.picturerepo.domain.space.service.SpaceUserDomainService;
 import com.lyh.picturerepo.domain.space.valueObject.SpaceLevelEnum;
 import com.lyh.picturerepo.domain.space.valueObject.SpaceRoleEnum;
@@ -62,56 +63,13 @@ public class SpaceApplicationServiceImpl implements SpaceApplicationService {
     @Lazy
     private DynamicShardingManager dynamicShardingManager;
 
-    @Override
-    public void validSpace(Space space, boolean add) {
-        ThrowUtils.throwIf(space == null, ErrorCode.PARAMS_ERROR, "空间不能为空");
-        //从对象取值
-        String spaceName = space.getSpaceName();
-        Integer spaceLevel = space.getSpaceLevel();
-        SpaceLevelEnum spaceLevelEnum = SpaceLevelEnum.getEnumByValue(spaceLevel);
-        Integer spaceType = space.getSpaceType();
-        SpaceTypeEnum spaceTypeEnum = SpaceTypeEnum.getEnumByValue(spaceType);
-// 创建时校验
-        if (add) {
-            if (StrUtil.isBlank(spaceName)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间名称不能为空");
-            }
-            if (spaceLevel == null) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间级别不能为空");
-            }
-            if (spaceType == null) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间类别不能为空");
-            }
-        }
-        // 修改数据时，空间名称进行校验
-        if (StrUtil.isNotBlank(spaceName) && spaceName.length() > 30) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间名称过长");
-        }
-        // 修改数据时，空间级别进行校验
-        if (spaceLevel != null && spaceLevelEnum == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间级别不存在");
-        }
-        // 修改数据时，空间类别进行校验
-        if (spaceType != null && spaceTypeEnum == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间类别不存在");
-        }
-    }
+    @Resource
+    private SpaceDomainService spaceDomainService;
+
 
     @Override
     public void fillSpaceBySpaceLevel(Space space) {
-        // 根据空间级别，自动填充限额
-        SpaceLevelEnum spaceLevelEnum = SpaceLevelEnum.getEnumByValue(space.getSpaceLevel());
-        if (spaceLevelEnum != null) {
-            long maxSize = spaceLevelEnum.getMaxSize();
-            if (space.getMaxSize() == null) {
-                space.setMaxSize(maxSize);
-            }
-            long maxCount = spaceLevelEnum.getMaxCount();
-            if (space.getMaxCount() == null) {
-                space.setMaxCount(maxCount);
-            }
-        }
-
+        spaceDomainService.fillSpaceBySpaceLevel(space);
     }
 
     @Override
@@ -119,19 +77,10 @@ public class SpaceApplicationServiceImpl implements SpaceApplicationService {
         Space space = new Space();
         BeanUtils.copyProperties(spaceAdd, space);
         // 默认值
-        if (StrUtil.isBlank(spaceAdd.getSpaceName())) {
-            space.setSpaceName("默认空间");
-        }
-        if (spaceAdd.getSpaceLevel() == null) {
-            space.setSpaceLevel(SpaceLevelEnum.COMMON.getValue());
-        }
-        if (space.getSpaceType() == null) {
-            space.setSpaceType(SpaceTypeEnum.PRIVATE.getValue());
-        }
         // 填充容量和大小
         this.fillSpaceBySpaceLevel(space);
         // 2. 校验参数
-        this.validSpace(space, true);
+        space.validSpace(true);
         // 3. 校验权限，非管理员只能创建普通级别的空间
         Long userId = loginUser.getId();
         space.setUserId(userId);
@@ -163,14 +112,14 @@ public class SpaceApplicationServiceImpl implements SpaceApplicationService {
 //                    return Optional.ofNullable(execute).orElse(-1L);
                     Long newSpaceId = transactionTemplate.execute(status -> {
                         // 判断是否已有空间
-                        boolean exists = this.lambdaQuery()
+                        boolean exists = spaceDomainService.lambdaQuery()
                                 .eq(Space::getUserId, userId)
                                 .eq(Space::getSpaceType, space.getSpaceType())
                                 .exists();
                         // 如果已有空间，就不能再创建
                         ThrowUtils.throwIf(exists, ErrorCode.OPERATION_ERROR, "每个用户每类空间只能创建一个");
                         // 创建
-                        boolean result = this.save(space);
+                        boolean result = spaceDomainService.save(space);
                         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "保存空间到数据库失败");
                         // 创建成功后，如果是团队空间，关联新增团队成员记录
                         if (SpaceTypeEnum.TEAM.getValue() == space.getSpaceType()) {
@@ -202,10 +151,7 @@ public class SpaceApplicationServiceImpl implements SpaceApplicationService {
 
     @Override
     public void checkSpaceAuth(User loginUser, Space space) {
-        // 仅本人或管理员可编辑
-        if (!space.getUserId().equals(loginUser.getId()) && !(loginUser.isAdmin())) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-        }
+        spaceDomainService.checkSpaceAuth(loginUser, space);
     }
 
     @Override
@@ -254,27 +200,6 @@ public class SpaceApplicationServiceImpl implements SpaceApplicationService {
 
     @Override
     public QueryWrapper<Space> getQueryWrapper(SpaceQuery spaceQuery) {
-        QueryWrapper<Space> queryWrapper = new QueryWrapper<>();
-        if (spaceQuery == null) {
-            return queryWrapper;
-        }
-        // 从对象中取值
-        Long id = spaceQuery.getId();
-        Long userId = spaceQuery.getUserId();
-        String spaceName = spaceQuery.getSpaceName();
-        Integer spaceLevel = spaceQuery.getSpaceLevel();
-        Integer spaceType = spaceQuery.getSpaceType();
-        String sortField = spaceQuery.getSortField();
-        String sortOrder = spaceQuery.getSortOrder();
-
-        // 拼接查询条件
-        queryWrapper.eq(ObjUtil.isNotEmpty(id), "id", id);
-        queryWrapper.eq(ObjUtil.isNotEmpty(userId), "userId", userId);
-        queryWrapper.like(StrUtil.isNotBlank(spaceName), "spaceName", spaceName);
-        queryWrapper.eq(ObjUtil.isNotEmpty(spaceLevel), "spaceLevel", spaceLevel);
-        queryWrapper.eq(ObjUtil.isNotEmpty(spaceType), "spaceType", spaceType);
-        // 排序
-        queryWrapper.orderBy(StrUtil.isNotEmpty(sortField), sortOrder.equals("ascend"), sortField);
-        return queryWrapper;
+        return spaceDomainService.getQueryWrapper(spaceQuery);
     }
 }

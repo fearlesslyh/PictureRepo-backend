@@ -1,4 +1,4 @@
-package com.lyh.picturerepobackend.controller;
+package com.lyh.picturerepo.interfaces.controller;
 
 
 import com.lyh.picturerepo.domain.space.service.SpaceAnalyzeDomainService;
