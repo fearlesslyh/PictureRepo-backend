@@ -1,10 +1,8 @@
 package com.lyh.picturerepo.application.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.lyh.picturerepo.application.service.SpaceUserApplicationService;
 import com.lyh.picturerepo.application.service.UserApplicationService;
 import com.lyh.picturerepo.domain.space.entity.Space;
@@ -16,7 +14,6 @@ import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepo.infrastructure.exception.BusinessException;
 import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
 import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
-import com.lyh.picturerepo.infrastructure.mapper.SpaceUserMapper;
 import com.lyh.picturerepo.interfaces.dto.spaceuser.SpaceUserAddRequest;
 import com.lyh.picturerepo.interfaces.dto.spaceuser.SpaceUserQueryRequest;
 import com.lyh.picturerepo.interfaces.vo.space.SpaceUserVO;

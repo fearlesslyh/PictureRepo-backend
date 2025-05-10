@@ -1,7 +1,7 @@
 package com.lyh.picturerepo.interfaces.vo.space;
 
-import com.lyh.picturerepo.interfaces.vo.user.UserVO;
 import com.lyh.picturerepo.domain.space.entity.SpaceUser;
+import com.lyh.picturerepo.interfaces.vo.user.UserVO;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 

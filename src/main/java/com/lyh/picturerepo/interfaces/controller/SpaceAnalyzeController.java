@@ -1,8 +1,9 @@
 package com.lyh.picturerepo.interfaces.controller;
 
 
-import com.lyh.picturerepo.domain.space.service.SpaceAnalyzeDomainService;
 import com.lyh.picturerepo.application.service.UserApplicationService;
+import com.lyh.picturerepo.domain.space.entity.Space;
+import com.lyh.picturerepo.domain.space.service.SpaceAnalyzeDomainService;
 import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepo.infrastructure.common.BaseResponse;
 import com.lyh.picturerepo.infrastructure.common.ResultUtils;
@@ -10,7 +11,6 @@ import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
 import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
 import com.lyh.picturerepo.interfaces.dto.space.analyse.*;
 import com.lyh.picturerepo.interfaces.vo.space.analyse.*;
-import com.lyh.picturerepo.domain.space.entity.Space;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

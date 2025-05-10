@@ -13,15 +13,12 @@ import com.lyh.picturerepo.interfaces.dto.user.UserQuery;
 import com.lyh.picturerepo.interfaces.dto.user.UserRegister;
 import com.lyh.picturerepo.interfaces.vo.user.LoginUserVO;
 import com.lyh.picturerepo.interfaces.vo.user.UserVO;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Set;
-
-import static com.lyh.picturerepo.infrastructure.exception.ErrorCode.OPERATION_ERROR;
 
 /**
  * @author RAOYAO

@@ -21,13 +21,13 @@ import com.lyh.picturerepo.infrastructure.api.aliyunai.model.CreateOutPaintingTa
 import com.lyh.picturerepo.infrastructure.exception.BusinessException;
 import com.lyh.picturerepo.infrastructure.exception.ErrorCode;
 import com.lyh.picturerepo.infrastructure.exception.ThrowUtils;
+import com.lyh.picturerepo.infrastructure.manager.file.FileUpload;
+import com.lyh.picturerepo.infrastructure.manager.upload.LocalFilePictureUpload;
+import com.lyh.picturerepo.infrastructure.manager.upload.PictureUploadTemplate;
+import com.lyh.picturerepo.infrastructure.manager.upload.UrlFilePictureUpload;
 import com.lyh.picturerepo.infrastructure.utils.ColorSimilarUtils;
 import com.lyh.picturerepo.interfaces.dto.picture.*;
 import com.lyh.picturerepo.interfaces.vo.picture.PictureVO;
-import com.lyh.picturerepobackend.manager.upload.LocalFilePictureUpload;
-import com.lyh.picturerepobackend.manager.upload.PictureUploadTemplate;
-import com.lyh.picturerepobackend.manager.upload.UrlFilePictureUpload;
-import com.lyh.picturerepobackend.model.dto.file.FileUpload;
 import groovy.lang.Lazy;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;

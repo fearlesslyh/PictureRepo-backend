@@ -52,7 +52,7 @@ spring:
             type: CLASS_BASED
             props:
               strategy: standard
-              algorithmClassName: com.lyh.picturerepobackend.manager.sharding.PictureShardingAlgorithm
+              algorithmClassName: com.lyh.picturerepo.shared.sharding.PictureShardingAlgorithm
     props:
       sql-show: true
 

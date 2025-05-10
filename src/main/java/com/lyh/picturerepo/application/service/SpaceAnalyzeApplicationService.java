@@ -1,6 +1,5 @@
 package com.lyh.picturerepo.application.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.lyh.picturerepo.domain.space.entity.Space;
 import com.lyh.picturerepo.domain.user.entity.User;
 import com.lyh.picturerepo.interfaces.dto.space.analyse.*;

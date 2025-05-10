@@ -2,7 +2,6 @@ package com.lyh.picturerepo.application.service;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.lyh.picturerepo.domain.space.entity.SpaceUser;
 import com.lyh.picturerepo.interfaces.dto.spaceuser.SpaceUserAddRequest;
 import com.lyh.picturerepo.interfaces.dto.spaceuser.SpaceUserQueryRequest;
